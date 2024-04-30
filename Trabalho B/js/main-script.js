@@ -4,11 +4,77 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
+const clawSize = 5;
+const clawDistanceFromCenter = clawSize * 5;
+const baseHookHeight = clawDistanceFromCenter / 2;
+
+const cableInitialHeight = 30;
+
+const craneWidth = 25;
+const superiorCraneHeight = craneWidth;
+
+const trolleyWidth = craneWidth;
+const trolleyHeight = superiorCraneHeight / 2;
+const trolleyX = 0;
+const trolleyY = trolleyHeight / 2;
+const trolleyZ = 0;
+
+const trolleyInitialDistance = 100;
+
+const lanceCarrierWidth = craneWidth;
+const lanceCarrierHeight = superiorCraneHeight * 3;
+const lanceCarrierX = 0;
+const lanceCarrierY = lanceCarrierHeight / 2;
+const lanceCarrierZ = 0;
+
+const lanceWidth = craneWidth;
+const lanceHeight = superiorCraneHeight;
+const lanceLength = craneWidth * 10
+const lanceX = lanceCarrierWidth / 2 + lanceLength / 2;
+const lanceY = lanceHeight / 2;
+const lanceZ = 0;
+
+const counterLanceWidth = craneWidth;
+const counterLanceHeight = superiorCraneHeight;
+const counterLanceLength = lanceLength / 3;
+const counterLanceX = -lanceCarrierWidth / 2 - counterLanceLength / 2;
+const counterLanceY = counterLanceHeight / 2;
+const counterLanceZ = 0;
+
+const counterWeightWidth = craneWidth;
+const counterWeightHeight = counterLanceWidth;
+const counterWeightX = counterLanceX;
+const counterWeightY = counterLanceY - counterLanceHeight / 2 - counterWeightHeight / 2;
+const counterWeightZ = 0;
+
+const cabineWidth = craneWidth;
+const cabineLength = cabineWidth / 2;
+const cabineHeight = lanceCarrierHeight / 2;
+const cabineX = lanceCarrierWidth / 2 + cabineLength / 2;
+const cabineY = -cabineHeight / 2;
+const cabineZ = 0;
+
+const baseWidth = craneWidth * 2.5;
+const baseHeigth = superiorCraneHeight / 2;
+const baseX = 0;
+const baseY = baseHeigth / 2;
+const baseZ = 0;
+
+const towerWidth = craneWidth;
+const towerHeight = lanceLength;
+const towerX = 0;
+const towerY = towerHeight / 2 + baseHeigth;
+const towerZ = 0;
+
+const angleStep = Math.PI / 180; // Adjust as needed
+const angle1Range = { min: -Math.PI / 4, max: Math.PI / 4 }; // Example range
 
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
 var camera, scene, renderer;
+
+var superiorCrane;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -20,7 +86,7 @@ function createScene(){
 
     scene.add(new THREE.AxesHelper(10));
 
-    createGrua();
+    createCrane();
 }
 
 //////////////////////
@@ -44,92 +110,41 @@ function createCamera() {
 /* CREATE OBJECT3D(S) */
 ////////////////////////
 
-function createGrua() {
+function createCrane() {
     'use strict';
 
-    var clawSize = 5;
-    var clawDistanceFromCenter = clawSize * 5;
-    var baseHookHeight = clawDistanceFromCenter / 2;
-
-    var cableHeight = 30;
-
-    var superiorCraneWidth = 25;
-    var superiorCraneHeight = superiorCraneWidth;
-
-    var trolleyWidth = superiorCraneWidth;
-    var trolleyHeight = superiorCraneHeight / 2;
-    var trolleyX = 0;
-    var trolleyY = trolleyHeight / 2;
-    var trolleyZ = 0;
-
-    var trolleyInitialDistance = 100;
-
-    var lanceCarrierWidth = superiorCraneWidth;
-    var lanceCarrierHeight = superiorCraneHeight * 3;
-    var lanceCarrierX = 0;
-    var lanceCarrierY = lanceCarrierHeight / 2;
-    var lanceCarrierZ = 0;
-
-    var lanceWidth = superiorCraneWidth;
-    var lanceHeight = superiorCraneHeight;
-    var lanceLength = superiorCraneWidth * 10
-    var lanceX = lanceCarrierWidth / 2 + lanceLength / 2;
-    var lanceY = lanceHeight / 2;
-    var lanceZ = 0;
-
-    var counterLanceWidth = superiorCraneWidth;
-    var counterLanceHeight = superiorCraneHeight;
-    var counterLanceLength = lanceLength / 3;
-    var counterLanceX = -lanceCarrierWidth / 2 - counterLanceLength / 2;
-    var counterLanceY = counterLanceHeight / 2;
-    var counterLanceZ = 0;
-
-    var cabineWidth = superiorCraneWidth;
-    var cabineLength = cabineWidth / 2;
-    var cabineHeight = lanceCarrierHeight / 2;
-    var cabineX = lanceCarrierWidth / 2 + cabineLength / 2;
-    var cabineY = -cabineHeight / 2;
-    var cabineZ = 0;
-
-    var baseWidth = superiorCraneWidth * 2.5;
-    var baseHeigth = superiorCraneHeight / 2;
-    var baseX = 0;
-    var baseY = baseHeigth / 2;
-    var baseZ = 0;
-
-    var towerWidth = superiorCraneWidth;
-    var towerHeight = lanceLength;
-    var towerX = 0;
-    var towerY = towerHeight / 2 + baseHeigth;
-    var towerZ = 0;
-
-    var trolleyGroup = new THREE.Object3D();
-    // mudar a altura porque não é bem clawSize que é suposto tar ali
-    createHook(trolleyGroup, clawSize, clawDistanceFromCenter, baseHookHeight, 0, -clawSize / 2 - baseHookHeight / 2 - cableHeight, 0);
-    createCable(trolleyGroup, cableHeight, 0, -cableHeight / 2, 0);
-    createTrolley(trolleyGroup, trolleyWidth, trolleyHeight, trolleyX, trolleyY, trolleyZ);
-    trolleyGroup.position.set(trolleyInitialDistance + lanceCarrierWidth / 2 + trolleyWidth / 2, 0, 0);
-
-    var superiorCrane = new THREE.Object3D();
-    superiorCrane.add(trolleyGroup);
-    createLanceCarrier(superiorCrane, lanceCarrierWidth, lanceCarrierHeight, lanceCarrierX, lanceCarrierY, lanceCarrierZ);
-    createLance(superiorCrane, lanceWidth, lanceLength, lanceHeight, lanceX, lanceY, lanceZ);
-    createCounterLance(superiorCrane, counterLanceWidth, counterLanceLength, counterLanceHeight, counterLanceX, counterLanceY, counterLanceZ);
-    createCabin(superiorCrane, cabineWidth, cabineHeight, cabineLength, cabineX, cabineY, cabineZ);
-    superiorCrane.position.set(0, baseHeigth + towerHeight, 0);
-
-    var inferiorCrane = new THREE.Object3D();
-    createTower(inferiorCrane, towerWidth, towerHeight, towerX, towerY, towerZ);
-    createBase(inferiorCrane, baseWidth, baseHookHeight, baseX, baseY, baseZ);
-
     var crane = new THREE.Object3D();
-    crane.add(superiorCrane);
-    crane.add(inferiorCrane);
+    createSuperiorCrane(crane, 0, baseHeigth + towerHeight, 0);
+    createInferiorCrane(crane, 0, 0, 0);
 
     scene.add(crane);
 }
 
-function createHook(parent, clawSize, clawDistanceFromCenter, baseGarraHeight, x, y, z) {
+function createSuperiorCrane(parent, x, y, z) {
+    superiorCrane = new THREE.Object3D();
+    createTrolleyGroup(superiorCrane, trolleyInitialDistance + lanceCarrierWidth / 2 + trolleyWidth / 2, 0, 0);
+    createLanceCarrier(superiorCrane, lanceCarrierX, lanceCarrierY, lanceCarrierZ);
+    createLance(superiorCrane, lanceX, lanceY, lanceZ);
+    createCounterLance(superiorCrane, counterLanceX, counterLanceY, counterLanceZ);
+    createCounterWeight(superiorCrane, counterWeightX, counterWeightY, counterWeightZ);
+    createCabin(superiorCrane, cabineX, cabineY, cabineZ);
+    superiorCrane.position.set(x, y, z);
+
+    parent.add(superiorCrane)
+}
+
+function createTrolleyGroup(parent, x, y, z) {
+    var trolleyGroup = new THREE.Object3D();
+    // mudar a altura porque não é bem clawSize que é suposto tar ali
+    createHook(trolleyGroup, 0, -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight, 0);
+    createCable(trolleyGroup, 0, -cableInitialHeight / 2, 0);
+    createTrolley(trolleyGroup, trolleyX, trolleyY, trolleyZ);
+    trolleyGroup.position.set(x, y, z);
+
+    parent.add(trolleyGroup);
+}
+
+function createHook(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
     var dedo1 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
@@ -141,9 +156,9 @@ function createHook(parent, clawSize, clawDistanceFromCenter, baseGarraHeight, x
     var dedo4 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
     dedo4.position.set(0, 0, 0);
 
-    var baseGarra = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseGarraHeight, clawDistanceFromCenter), material);
+    var baseGarra = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseHookHeight, clawDistanceFromCenter), material);
     // mudar a altura porque não é bem clawSize que é suposto estar ali.
-    baseGarra.position.set(clawDistanceFromCenter / 2, clawSize + baseGarraHeight / 2, clawDistanceFromCenter / 2);
+    baseGarra.position.set(clawDistanceFromCenter / 2, clawSize + baseHookHeight / 2, clawDistanceFromCenter / 2);
 
     var hook = new THREE.Object3D();
     hook.add(baseGarra);
@@ -152,20 +167,20 @@ function createHook(parent, clawSize, clawDistanceFromCenter, baseGarraHeight, x
     hook.add(dedo3);
     hook.add(dedo4);
 
-    hook.position.set(x - clawDistanceFromCenter / 2, y - clawSize - baseGarraHeight / 2, z - clawDistanceFromCenter / 2);
+    hook.position.set(x - clawDistanceFromCenter / 2, y - clawSize - baseHookHeight / 2, z - clawDistanceFromCenter / 2);
 
     parent.add(hook);
 }
 
-function createCable(parent, cableHeight, x, y, z) {
+function createCable(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
     var radius = 1;
     var distanceFromCenter = 3;
 
-    var cable1 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableHeight, 16), material);
+    var cable1 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), material);
     cable1.position.set(distanceFromCenter, 0, -distanceFromCenter);
-    var cable2 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableHeight, 16), material);
+    var cable2 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), material);
     cable2.position.set(-distanceFromCenter, 0, distanceFromCenter);
 
     var cables = new THREE.Object3D();
@@ -177,10 +192,10 @@ function createCable(parent, cableHeight, x, y, z) {
     parent.add(cables);
 }
 
-function createTrolley(parent, width, height, x, y, z) {
+function createTrolley(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var trolley = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    var trolley = new THREE.Mesh(new THREE.BoxGeometry(trolleyWidth, trolleyHeight, trolleyWidth), material);
     trolley.position.set(x, y, z);
 
     // TODO fazer rodas
@@ -188,56 +203,73 @@ function createTrolley(parent, width, height, x, y, z) {
     parent.add(trolley);
 }
 
-function createLance(parent, width, length, height, x, y, z) {
+function createLance(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var lance = new THREE.Mesh(new THREE.BoxGeometry(length, height, width), material);
+    var lance = new THREE.Mesh(new THREE.BoxGeometry(lanceLength, lanceHeight, lanceWidth), material);
     lance.position.set(x, y, z);
 
     parent.add(lance);
 }
 
-function createCounterLance(parent, width, length, height, x, y, z) {
+function createCounterLance(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var lance = new THREE.Mesh(new THREE.BoxGeometry(length, height, width), material);
-    lance.position.set(x, y, z);
+    var counterLance = new THREE.Mesh(new THREE.BoxGeometry(counterLanceLength, counterLanceHeight, counterLanceWidth), material);
+    counterLance.position.set(x, y, z);
 
-    parent.add(lance);
-
+    parent.add(counterLance);
 }
 
-function createLanceCarrier(parent, width, height, x, y, z) {
+function createCounterWeight(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var lanceCarrier = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    var counterWeight = new THREE.Mesh(new THREE.BoxGeometry(counterWeightWidth, counterWeightHeight, counterWeightWidth), material);
+    counterWeight.position.set(x, y, z);
+
+    parent.add(counterWeight);
+}
+
+function createLanceCarrier(parent, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var lanceCarrier = new THREE.Mesh(new THREE.BoxGeometry(lanceCarrierWidth, lanceCarrierHeight, lanceCarrierWidth), material);
     lanceCarrier.position.set(x, y, z);
 
     parent.add(lanceCarrier);
 }
 
-function createCabin(parent, width, height, length, x, y, z) {
+function createCabin(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var cabine = new THREE.Mesh(new THREE.BoxGeometry(length, height, width), material);
+    var cabine = new THREE.Mesh(new THREE.BoxGeometry(cabineLength, cabineHeight, cabineWidth), material);
     cabine.position.set(x, y, z);
 
     parent.add(cabine);
 }
 
-function createTower(parent, width, height, x, y, z) {
+function createInferiorCrane(parent, x, y, z) {
+    var inferiorCrane = new THREE.Object3D();
+    createTower(inferiorCrane, towerX, towerY, towerZ);
+    createBase(inferiorCrane, baseX, baseY, baseZ);
+    inferiorCrane.position.set(x, y, z);
+
+    parent.add(inferiorCrane);
+}
+
+function createTower(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var tower = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    var tower = new THREE.Mesh(new THREE.BoxGeometry(towerWidth, towerHeight, towerWidth), material);
     tower.position.set(x, y, z);
 
     parent.add(tower);
 }
 
-function createBase(parent, width, height, x, y, z) {
+function createBase(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var base = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    var base = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, baseHeigth, baseWidth), material);
     base.position.set(x, y, z);
 
     parent.add(base);
@@ -325,6 +357,10 @@ function onKeyDown(e) {
     case 113: //q
         var keyQ = document.getElementById('keyQ');
         keyQ.classList.toggle('active', true);
+        if ((superiorCrane.rotation.y + angleStep) != angle1Range.max) {
+            const rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), angleStep);
+            superiorCrane.applyMatrix4(rotationMatrix);
+        }
         break;
     case 65: //A
     case 97: //a
