@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="�utf-8">
+    <title>Hello 3D World!</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@v0.163.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+<body>
+  <div id="hud">
+      <h2>Controls</h2>
+      <div id="keyMap">
+          <ul>
+              <li>Rotate Upper Section: <span id="keyQ">Q / q</span> and <span id="keyA">A / a</span></li>
+              <li>Move Trolley <span id="keyW">W / w</span> and <span id="keyS">S / s</span></li>
+              <li>Move Hook Block: <span id="keyE">E / e</span> and <span id="keyD">D / d</span></li>
+              <li>Control Claw Angle : <span id="keyR">R / r</span> and <span id="keyF">F / f</span></li>
+              <li>Toggle Wire / Solid Models: <span id="key1">1</span></li>
+          </ul>
+      </div>
+  </div>
+  <script type="module" src="js/main-script.js"></script>
