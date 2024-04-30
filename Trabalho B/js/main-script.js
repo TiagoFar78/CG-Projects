@@ -30,9 +30,9 @@ function createCamera() {
     //Kiko muda
     'use strict';
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.x = 150;
-    camera.position.y = 150;
-    camera.position.z = 150;
+    camera.position.x = 300;
+    camera.position.y = 500;
+    camera.position.z = 300;
     camera.lookAt(scene.position);
 }
 
@@ -84,6 +84,25 @@ function createGrua() {
     var counterLanceY = counterLanceHeight / 2;
     var counterLanceZ = 0;
 
+    var cabineWidth = superiorCraneWidth;
+    var cabineLength = cabineWidth / 2;
+    var cabineHeight = lanceCarrierHeight / 2;
+    var cabineX = lanceCarrierWidth / 2 + cabineLength / 2;
+    var cabineY = -cabineHeight / 2;
+    var cabineZ = 0;
+
+    var baseWidth = superiorCraneWidth * 2.5;
+    var baseHeigth = superiorCraneHeight / 2;
+    var baseX = 0;
+    var baseY = baseHeigth / 2;
+    var baseZ = 0;
+
+    var towerWidth = superiorCraneWidth;
+    var towerHeight = lanceLength;
+    var towerX = 0;
+    var towerY = towerHeight / 2 + baseHeigth;
+    var towerZ = 0;
+
     var trolleyGroup = new THREE.Object3D();
     // mudar a altura porque não é bem clawSize que é suposto tar ali
     createHook(trolleyGroup, clawSize, clawDistanceFromCenter, baseHookHeight, 0, -clawSize / 2 - baseHookHeight / 2 - cableHeight, 0);
@@ -96,64 +115,18 @@ function createGrua() {
     createLanceCarrier(superiorCrane, lanceCarrierWidth, lanceCarrierHeight, lanceCarrierX, lanceCarrierY, lanceCarrierZ);
     createLance(superiorCrane, lanceWidth, lanceLength, lanceHeight, lanceX, lanceY, lanceZ);
     createCounterLance(superiorCrane, counterLanceWidth, counterLanceLength, counterLanceHeight, counterLanceX, counterLanceY, counterLanceZ);
+    createCabin(superiorCrane, cabineWidth, cabineHeight, cabineLength, cabineX, cabineY, cabineZ);
+    superiorCrane.position.set(0, baseHeigth + towerHeight, 0);
 
-/*
+    var inferiorCrane = new THREE.Object3D();
+    createTower(inferiorCrane, towerWidth, towerHeight, towerX, towerY, towerZ);
+    createBase(inferiorCrane, baseWidth, baseHookHeight, baseX, baseY, baseZ);
 
-    // porta lanca
+    var crane = new THREE.Object3D();
+    crane.add(superiorCrane);
+    crane.add(inferiorCrane);
 
-    var contraLancaWidth = lancaWidth;
-    var contraLancaLength = lancaLength / 3;
-    var contraLancaHeigth = lancaHeight;
-
-    var contraLanca = new THREE.Mesh(new THREE.BoxGeometry(contraLancaLength, contraLancaHeigth, contraLancaWidth), material);
-    contraLanca.position.set(-contraLancaLength / 2 - portaLancaWidth - lancaLength / 2, contraLancaHeigth / 2, 0);
-
-    // cabine
-
-    var cabineWidth = lancaWidth;
-    var cabineLength = cabineWidth / 2;
-    var cabineHeight = portaLancaHeigth / 2;
-
-    var cabine = new THREE.Mesh(new THREE.BoxGeometry(cabineLength, cabineHeight, cabineWidth), material);
-    cabine.position.set(cabineLength / 2 - lancaLength / 2, -cabineHeight / 2, 0);
-
-    // Parte superior da grua (roda)
-
-    var gruaSuperior = new THREE.Object3D();
-    gruaSuperior.add(trolleyGroup);
-    gruaSuperior.add(lanca);
-    gruaSuperior.add(portaLanca);
-    gruaSuperior.add(contraLanca);
-    gruaSuperior.add(cabine);
-    gruaSuperior.position.set(lancaLength / 2 + portaLancaWidth / 2, 0, 0);
-
-    // torre
-
-    var torreWidth = portaLancaWidth;
-    var torreHeigth = lancaLength;
-
-    var torre = new THREE.Mesh(new THREE.BoxGeometry(torreWidth, torreHeigth, torreWidth), material);
-    torre.position.set(0, -torreHeigth / 2, 0);
-
-    // base
-
-    var baseWidth = torreWidth * 2.5;
-    var baseHeigth = lancaHeight / 2;
-
-    var base = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, baseHeigth, baseWidth), material);
-    base.position.set(0, baseHeigth / 2 - torreHeigth, 0);
-
-    // Parte inferior da grua
-
-    var gruaInferior = new THREE.Object3D();
-    gruaInferior.add(torre);
-    gruaInferior.add(base);
-
-    var grua = new THREE.Object3D();
-    grua.add(gruaSuperior);
-    grua.add(gruaInferior);*/
-
-    scene.add(superiorCrane);
+    scene.add(crane);
 }
 
 function createHook(parent, clawSize, clawDistanceFromCenter, baseGarraHeight, x, y, z) {
@@ -243,8 +216,31 @@ function createLanceCarrier(parent, width, height, x, y, z) {
     parent.add(lanceCarrier);
 }
 
-function createCabin(parent) {
+function createCabin(parent, width, height, length, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
+    var cabine = new THREE.Mesh(new THREE.BoxGeometry(length, height, width), material);
+    cabine.position.set(x, y, z);
+
+    parent.add(cabine);
+}
+
+function createTower(parent, width, height, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var tower = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    tower.position.set(x, y, z);
+
+    parent.add(tower);
+}
+
+function createBase(parent, width, height, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var base = new THREE.Mesh(new THREE.BoxGeometry(width, height, width), material);
+    base.position.set(x, y, z);
+
+    parent.add(base);
 }
 
 //////////////////////
