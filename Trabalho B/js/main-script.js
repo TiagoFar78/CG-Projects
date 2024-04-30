@@ -84,6 +84,9 @@ function createScene(){
 
     scene = new THREE.Scene();
 
+    // Set background color to white
+    scene.background = new THREE.Color(0xffffff); // TODO escolher cor clara?
+
     scene.add(new THREE.AxesHelper(10));
 
     createCrane();
@@ -93,7 +96,7 @@ function createScene(){
 /* CREATE CAMERA(S) */
 //////////////////////
 function createCamera() {
-    //Kiko muda
+    // TODO dúvida: camera inicial = ??
     'use strict';
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.x = 300;
@@ -349,6 +352,52 @@ function onResize() {
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
+
+function createFrontalCamera() {
+    'use strict';
+    // Define the parameters for frontal camera
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    var near = 1;
+    var far = 1000;
+
+    // Create frontal camera
+    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
+    // Set camera position and orientation
+    camera.position.set(0, 0, 200);
+    camera.lookAt(scene.position);
+}
+
+function createLateralCamera() {
+    'use strict';
+    // Define the parameters for lateral camera
+    var width = window.innerWidth / 2; // Half the window width
+    var height = window.innerHeight;
+    var near = 1;
+    var far = 1000;
+
+    // Create lateral camera
+    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
+    // Set camera position and orientation
+    camera.position.set(200, 0, 0);
+    camera.lookAt(scene.position);
+}
+
+function createTopCamera() {
+    'use strict';
+    // Define the parameters for top camera
+    var width = window.innerWidth;
+    var height = window.innerHeight / 2; // Half the window height
+    var near = 1;
+    var far = 1000;
+
+    // Create top camera
+    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
+    // Set camera position and orientation
+    camera.position.set(0, 200, 0);
+    camera.lookAt(scene.position);
+}
+
 function onKeyDown(e) {
     'use strict';
 
@@ -401,6 +450,22 @@ function onKeyDown(e) {
         var key1 = document.getElementById('key1');
         key1.classList.toggle('active', true);
         break;
+    case 50: //2
+        var key2 = document.getElementById('key2');
+        key2.classList.toggle('active', true);
+        createFrontalCamera();
+        break;
+    case 51: //3
+        var key3 = document.getElementById('key3');
+        key3.classList.toggle('active', true);
+        createLateralCamera();
+        break;
+    case 52: //4
+        var key4 = document.getElementById('key4');
+        key4.classList.toggle('active', true);
+        createTopCamera();
+        break;
+
     default:
   }
 
@@ -456,6 +521,18 @@ function onKeyUp(e){
     case 49: //1
         var key1 = document.getElementById('key1');
         key1.classList.toggle('active', false);
+        break;
+    case 50: //2
+        var key2 = document.getElementById('key2');
+        key2.classList.toggle('active', false);
+        break;
+    case 51: //3
+        var key3 = document.getElementById('key3');
+        key3.classList.toggle('active', false);
+        break;
+    case 52: //4
+        var key4 = document.getElementById('key4');
+        key4.classList.toggle('active', false);
         break;
     default:
   }
