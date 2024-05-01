@@ -341,91 +341,36 @@ function update(){
     'use strict';
 
     if (keysPressed[81] || keysPressed[113]) { // Q
-        pressKeyQ();
+        rotateSuperiorCraneLeft();
     }
-    if (!keysPressed[81] || !keysPressed[113]) {
-        var keyQ = document.getElementById('keyQ');
-        keyQ.classList.toggle('active', false);
-    }
+
     if (keysPressed[65] || keysPressed[97]) { // A
-        pressKeyA();
+        rotateSuperiorCraneRight();
     }
-    if (!keysPressed[65] || !keysPressed[97]) {
-        var keyA = document.getElementById('keyA');
-        keyA.classList.toggle('active', false);
-    }
+    
     if (keysPressed[87] || keysPressed[119]) { // W
-        pressKeyW();
+        moveTrolleyLeft();
     }
-    if (!keysPressed[87] || !keysPressed[119]) {
-        var keyW = document.getElementById('keyW');
-        keyW.classList.toggle('active', false);
-    }
+    
     if (keysPressed[83] || keysPressed[115]) { // S
-        pressKeyS();
+        moveTrolleyRight();
     }
-    if (!keysPressed[83] || !keysPressed[115]) {
-        var keyS = document.getElementById('keyS');
-        keyS.classList.toggle('active', false);
-    }
+    
     if (keysPressed[69] || keysPressed[101]) { // E
-        pressKeyE();
+        moveHookDown();
     }
-    if (!keysPressed[69] || !keysPressed[101]) {
-        var keyE = document.getElementById('keyE');
-        keyE.classList.toggle('active', false);
-    }
+    
     if (keysPressed[68] || keysPressed[100]) { // D
-        pressKeyD();
+        moveHookUp();
     }
-    if (!keysPressed[68] || !keysPressed[100]) {
-        var keyD = document.getElementById('keyD');
-        keyD.classList.toggle('active', false);
-    }
+    
     if (keysPressed[82] || keysPressed[114]) { // R
-        pressKeyR();
+        closeClaw();
     }
-    if (!keysPressed[82] || !keysPressed[114]) {
-        var keyR = document.getElementById('keyR');
-        keyR.classList.toggle('active', false);
-    }
+    
     if (keysPressed[70] || keysPressed[102]) { // F
-        pressKeyF();
+        openClaw();
     }
-    if (!keysPressed[70] || !keysPressed[102]) {
-        var keyF = document.getElementById('keyF');
-        keyF.classList.toggle('active', false);
-    }
-    if (keysPressed[49]) { // 1
-        pressKey1();
-    }
-    if (!keysPressed[49]) {
-        var key1 = document.getElementById('key1');
-        key1.classList.toggle('active', false);
-    }
-    if (keysPressed[50]) { // 2
-        pressKey2();
-    }
-    if (!keysPressed[50]) {
-        var key2 = document.getElementById('key2');
-        key2.classList.toggle('active', false);
-    }
-    if (keysPressed[51]) { // 3
-        pressKey3();
-    }
-    if (!keysPressed[51]) {
-        var key3 = document.getElementById('key3');
-        key3.classList.toggle('active', false);
-    }
-    if (keysPressed[52]) { // 4
-        pressKey4();
-    }
-    if (!keysPressed[52]) {
-        var key4 = document.getElementById('key4');
-        key4.classList.toggle('active', false);
-    }
-
-
 }
 
 /////////////
@@ -481,7 +426,7 @@ function onResize() {
 /* KEY DOWN CALLBACK */
 ///////////////////////
 
-function pressKey2() {
+function createFrontalCamera() {
     'use strict';
 
     var key2 = document.getElementById('key2');
@@ -500,7 +445,7 @@ function pressKey2() {
     camera.lookAt(scene.position);
 }
 
-function pressKey3() {
+function createLateralCamera() {
     'use strict';
 
     var key3 = document.getElementById('key3');
@@ -519,7 +464,7 @@ function pressKey3() {
     camera.lookAt(scene.position);
 }
 
-function pressKey4() {
+function createTopCamera() {
     'use strict';
 
     var key4 = document.getElementById('key4');
@@ -538,40 +483,39 @@ function pressKey4() {
     camera.lookAt(scene.position);
 }
 
-function pressKeyQ() {
+function rotateSuperiorCraneLeft() {
     'use strict';
-    var keyQ = document.getElementById('keyQ');
-    keyQ.classList.toggle('active', true);
+
     var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), -superiorCraneStep);
     superiorCrane.applyMatrix4(rotationMatrix);
 }
 
-function pressKeyA() {
-    var keyA = document.getElementById('keyA');
-    keyA.classList.toggle('active', true);
+function rotateSuperiorCraneRight() {
+    'use strict';
+
     var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), superiorCraneStep);
     superiorCrane.applyMatrix4(rotationMatrix);
 }
 
-function pressKeyW() {
-    var keyW = document.getElementById('keyW');
-    keyW.classList.toggle('active', true);
+function moveTrolleyLeft() {
+    'use strict';
+
     if((trolleyGroup.position.x - trolleyStep) >= (lanceCarrierWidth / 2 + trolleyWidth / 2)) {
         trolleyGroup.position.x -= trolleyStep;
     }
 }
 
-function pressKeyS() {
-    var keyS = document.getElementById('keyS');
-    keyS.classList.toggle('active', true);
+function moveTrolleyRight() {
+    'use strict';
+
     if((trolleyGroup.position.x + trolleyStep) <= lanceLength) {
         trolleyGroup.position.x += trolleyStep;
     }
 }
 
-function pressKeyE() {
-    var keyE = document.getElementById('keyE');
-    keyE.classList.toggle('active', true);
+function moveHookDown() {
+    'use strict';
+
     if((hook.position.y - hookStep) >= -(towerHeight + baseHeigth - clawSize)) {
         hook.position.y -= hookStep;
         cables.position.y -= cablesStep;
@@ -579,9 +523,9 @@ function pressKeyE() {
     }
 }
 
-function pressKeyD() {
-    var keyD = document.getElementById('keyD');
-    keyD.classList.toggle('active', true);
+function moveHookUp() {
+    'use strict';
+
     if((hook.position.y + hookStep) <= -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight) {
         hook.position.y += hookStep;
         cables.position.y += cablesStep;
@@ -589,29 +533,87 @@ function pressKeyD() {
     }
 }
 
-function pressKeyR() {
-    var keyR = document.getElementById('keyR');
-    keyR.classList.toggle('active', true);
+function closeClaw() {
+    'use strict';
+
 }
 
-function pressKeyF() {
-    var keyF = document.getElementById('keyF');
-    keyF.classList.toggle('active', true);
-}
+function openClaw() {
+    'use strict';
 
-function pressKey1() {
-    var key1 = document.getElementById('key1');
-    key1.classList.toggle('active', true);
-    scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh) {
-            node.material.wireframe = !node.material.wireframe;
-        }
-    });
 }
 
 function onKeyDown(e) {
     'use strict';
+
     keysPressed[e.keyCode] = true;
+
+    switch (e.keyCode) {
+    case 81: //Q
+    case 113: //q
+        var keyQ = document.getElementById('keyQ');
+        keyQ.classList.toggle('active', true);
+        break;
+    case 65: //A
+    case 97: //a
+        var keyA = document.getElementById('keyA');
+        keyA.classList.toggle('active', true);
+        break;
+    case 87: //W
+    case 119: //w
+        var keyW = document.getElementById('keyW');
+        keyW.classList.toggle('active', true);
+        break;
+    case 83: //S
+    case 115: //s
+        var keyS = document.getElementById('keyS');
+        keyS.classList.toggle('active', true);
+        break;
+    case 69: //E
+    case 101: //e
+        var keyE = document.getElementById('keyE');
+        keyE.classList.toggle('active', true);
+        break;
+    case 68: //D
+    case 100: //d
+        var keyD = document.getElementById('keyD');
+        keyD.classList.toggle('active', true);
+        break;
+    case 82: //R
+    case 114: //r
+        var keyR = document.getElementById('keyR');
+        keyR.classList.toggle('active', true);
+        break;
+    case 70: //F
+    case 102: //f
+        var keyF = document.getElementById('keyF');
+        keyF.classList.toggle('active', true);
+        break;
+    case 49: //1
+        var key1 = document.getElementById('key1');
+        key1.classList.toggle('active', true);
+        scene.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                node.material.wireframe = !node.material.wireframe;
+            }
+        });
+        break;
+    case 50: //2
+        var key2 = document.getElementById('key2');
+        key2.classList.toggle('active', true);
+        createFrontalCamera();
+        break;
+    case 51: //3
+        var key3 = document.getElementById('key3');
+        key3.classList.toggle('active', true);
+        createLateralCamera();
+        break;
+    case 52: //4
+        var key4 = document.getElementById('key4');
+        key4.classList.toggle('active', true);
+        createTopCamera();
+        break;
+  }
 
 }
 
@@ -623,6 +625,64 @@ function onKeyUp(e){
 
     keysPressed[e.keyCode] = false;
 
+    switch (e.keyCode) {
+    case 81: //Q
+    case 113: //q
+        var keyQ = document.getElementById('keyQ');
+        keyQ.classList.toggle('active', false);
+        break;
+    case 65: //A
+    case 97: //a
+        var keyA = document.getElementById('keyA');
+        keyA.classList.toggle('active', false);
+        break;
+    case 87: //W
+    case 119: //w
+        var keyW = document.getElementById('keyW');
+        keyW.classList.toggle('active', false);
+        break;
+    case 83: //S
+    case 115: //s
+        var keyS = document.getElementById('keyS');
+        keyS.classList.toggle('active', false);
+        break;
+    case 69: //E
+    case 101: //e
+        var keyE = document.getElementById('keyE');
+        keyE.classList.toggle('active', false);
+        break;
+    case 68: //D
+    case 100: //d
+        var keyD = document.getElementById('keyD');
+        keyD.classList.toggle('active', false);
+        break;
+    case 82: //R
+    case 114: //r
+        var keyR = document.getElementById('keyR');
+        keyR.classList.toggle('active', false);
+        break;
+    case 70: //F
+    case 102: //f
+        var keyF = document.getElementById('keyF');
+        keyF.classList.toggle('active', false);
+        break;
+    case 49: //1
+        var key1 = document.getElementById('key1');
+        key1.classList.toggle('active', false);
+        break;
+    case 50: //2
+        var key2 = document.getElementById('key2');
+        key2.classList.toggle('active', false);
+        break;
+    case 51: //3
+        var key3 = document.getElementById('key3');
+        key3.classList.toggle('active', false);
+        break;
+    case 52: //4
+        var key4 = document.getElementById('key4');
+        key4.classList.toggle('active', false);
+        break;
+  }
 }
 
 init();
