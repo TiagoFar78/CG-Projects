@@ -9,8 +9,7 @@ body {
     top: 10px;
     left: 10px;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0);
-    color: #808080;
+    color: #606060;
 }
 
 #keyMap ul {
@@ -24,5 +23,5 @@ body {
 
 .active {
     font-weight: bold;
-    color: #ffffff;
+    color: #000000;
 }

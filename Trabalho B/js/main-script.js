@@ -73,15 +73,18 @@ const containerX = 150;
 const containerY = containerHeight / 2;
 const containerZ = 150;
 
-const angleStep = Math.PI / 180; // Adjust as needed
-const angle1Range = { min: -Math.PI / 4, max: Math.PI / 4 }; // Example range
+const superiorCraneStep = Math.PI / 180;
+const trolleyStep = 1;
+const hookStep = 2;
+const cablesStep = hookStep/2;
+const cablesScale = cablesStep/15;
 
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
 var camera, scene, renderer;
 
-var superiorCrane;
+var superiorCrane, trolleyGroup, hook, cables;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -145,7 +148,7 @@ function createSuperiorCrane(parent, x, y, z) {
 }
 
 function createTrolleyGroup(parent, x, y, z) {
-    var trolleyGroup = new THREE.Object3D();
+    trolleyGroup = new THREE.Object3D();
     // mudar a altura porque não é bem clawSize que é suposto tar ali
     createHook(trolleyGroup, 0, -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight, 0);
     createCable(trolleyGroup, 0, -cableInitialHeight / 2, 0);
@@ -171,7 +174,7 @@ function createHook(parent, x, y, z) {
     // mudar a altura porque não é bem clawSize que é suposto estar ali.
     baseGarra.position.set(clawDistanceFromCenter / 2, clawSize + baseHookHeight / 2, clawDistanceFromCenter / 2);
 
-    var hook = new THREE.Object3D();
+    hook = new THREE.Object3D();
     hook.add(baseGarra);
     hook.add(dedo1);
     hook.add(dedo2);
@@ -194,7 +197,7 @@ function createCable(parent, x, y, z) {
     var cable2 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), material);
     cable2.position.set(-distanceFromCenter, 0, distanceFromCenter);
 
-    var cables = new THREE.Object3D();
+    cables = new THREE.Object3D();
     cables.add(cable1);
     cables.add(cable2);
 
@@ -441,35 +444,51 @@ function onKeyDown(e) {
     case 113: //q
         var keyQ = document.getElementById('keyQ');
         keyQ.classList.toggle('active', true);
-        if ((superiorCrane.rotation.y + angleStep) != angle1Range.max) {
-            const rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), angleStep);
-            superiorCrane.applyMatrix4(rotationMatrix);
-        }
+        var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), -superiorCraneStep);
+        superiorCrane.applyMatrix4(rotationMatrix);
         break;
     case 65: //A
     case 97: //a
         var keyA = document.getElementById('keyA');
         keyA.classList.toggle('active', true);
+        var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), superiorCraneStep);
+        superiorCrane.applyMatrix4(rotationMatrix);
         break;
     case 87: //W
     case 119: //w
         var keyW = document.getElementById('keyW');
         keyW.classList.toggle('active', true);
+        if((trolleyGroup.position.x - trolleyStep) >= (lanceCarrierWidth / 2 + trolleyWidth / 2)) {
+            trolleyGroup.position.x -= trolleyStep;
+        }
         break;
     case 83: //S
     case 115: //s
         var keyS = document.getElementById('keyS');
         keyS.classList.toggle('active', true);
+        if((trolleyGroup.position.x + trolleyStep) <= lanceLength) {
+            trolleyGroup.position.x += trolleyStep;
+        }
         break;
     case 69: //E
     case 101: //e
         var keyE = document.getElementById('keyE');
         keyE.classList.toggle('active', true);
+        if((hook.position.y - hookStep) >= -(towerHeight + baseHeigth - clawSize)) {
+            hook.position.y -= hookStep;
+            cables.position.y -= cablesStep;
+            cables.scale.y += cablesScale;
+        }
         break;
     case 68: //D
     case 100: //d
         var keyD = document.getElementById('keyD');
         keyD.classList.toggle('active', true);
+        if((hook.position.y + hookStep) <= -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight) {
+            hook.position.y += hookStep;
+            cables.position.y += cablesStep;
+            cables.scale.y -= cablesScale;
+        }
         break;
     case 82: //R
     case 114: //r
