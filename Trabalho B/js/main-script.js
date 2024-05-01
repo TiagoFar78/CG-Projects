@@ -602,6 +602,11 @@ function pressKeyF() {
 function pressKey1() {
     var key1 = document.getElementById('key1');
     key1.classList.toggle('active', true);
+    scene.traverse(function (node) {
+        if (node instanceof THREE.Mesh) {
+            node.material.wireframe = !node.material.wireframe;
+        }
+    });
 }
 
 function onKeyDown(e) {
