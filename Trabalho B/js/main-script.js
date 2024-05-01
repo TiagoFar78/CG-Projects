@@ -73,6 +73,14 @@ const containerX = 150;
 const containerY = containerHeight / 2;
 const containerZ = 150;
 
+const cargoMaxWidth = 40;
+const cargoMinWidth = 15;
+const cargoMaxLength = 75;
+const cargoMinLength = 30;
+const cargoMaxHeight = 70;
+const cargoMinHeight = 25;
+const cargoMaxDistanceFromBase = lanceLength * 8 / 10;
+
 const superiorCraneStep = Math.PI / 180;
 const trolleyStep = 1;
 const hookStep = 2;
@@ -86,12 +94,17 @@ var camera, scene, renderer;
 
 var superiorCrane, trolleyGroup, hook, cables, dedo1, dedo2, dedo3, dedo4;
 
+var cargoLowerXCorners = [];
+var cargoLowerZCorners = [];
+var cargoUpperXCorners = [];
+var cargoUpperZCorners = [];
+
 var keysPressed = {};
 
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
-function createScene(){
+function createScene() {
     'use strict';
 
     scene = new THREE.Scene();
@@ -103,6 +116,8 @@ function createScene(){
 
     createCrane();
     createContainer();
+
+    createCargo();
 }
 
 //////////////////////
@@ -316,6 +331,40 @@ function createContainer() {
     mesh.position.set(containerX, containerY, containerZ);
     
     scene.add(mesh);
+}
+
+function createCargo() {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var length = generateRandomNumber(cargoMaxLength, cargoMinLength);
+    var width = generateRandomNumber(cargoMaxWidth, cargoMinWidth);
+
+    var x = generateRandomNumber(cargoMaxDistanceFromBase, baseWidth / 2 + length / 2);
+    var z = generateRandomNumber(cargoMaxDistanceFromBase, baseWidth / 2 + width / 2);
+
+    if (!isValidCargoPosition(x - length / 2, z - width / 2, x + length / 2, z + width / 2)) {
+        createCargo();
+        return;
+    }
+
+    var height = generateRandomNumber(cargoMaxHeight, cargoMinHeight);
+
+    var mesh = new THREE.Mesh(createRandomCargoGeometry(length, height, width), material);
+    mesh.position.set(x, height / 2, z);
+
+    scene.add(mesh);
+}
+
+function isValidCargoPosition(lowerXCorner, lowerZCorner, upperXCorner, upperZCorner) {
+    return true;
+}
+
+function createRandomCargoGeometry(length, height, width) {
+    return new THREE.BoxGeometry(length, height, width);
+}
+
+function generateRandomNumber(max, min) {
+    return Math.floor(Math.random() * (max - min) + 1) + min;
 }
 
 //////////////////////
