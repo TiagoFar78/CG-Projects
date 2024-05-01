@@ -66,6 +66,13 @@ const towerX = 0;
 const towerY = towerHeight / 2 + baseHeigth;
 const towerZ = 0;
 
+const containerWidth = 60;
+const containerLength = 100;
+const containerHeight = 60;
+const containerX = 150;
+const containerY = containerHeight / 2;
+const containerZ = 150;
+
 const angleStep = Math.PI / 180; // Adjust as needed
 const angle1Range = { min: -Math.PI / 4, max: Math.PI / 4 }; // Example range
 
@@ -90,6 +97,7 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createCrane();
+    createContainer();
 }
 
 //////////////////////
@@ -291,6 +299,18 @@ function createBase(parent, x, y, z) {
     base.position.set(x, y, z);
 
     parent.add(base);
+}
+
+function createContainer() {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var materialTransparent = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide });
+
+    var materials = [material, material, materialTransparent, material, material, material];
+
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(containerLength, containerHeight, containerWidth), materials);
+    mesh.position.set(containerX, containerY, containerZ);
+    
+    scene.add(mesh);
 }
 
 //////////////////////
