@@ -198,10 +198,25 @@ function createCable(parent, x, y, z) {
 function createTrolley(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var trolley = new THREE.Mesh(new THREE.BoxGeometry(trolleyWidth, trolleyHeight, trolleyWidth), material);
-    trolley.position.set(x, y, z);
+    var boxHeight = trolleyHeight * 4 / 5;
+    var wheelHeigth = trolleyHeight * 1 / 5;
 
-    // TODO fazer rodas
+    var box = new THREE.Mesh(new THREE.BoxGeometry(trolleyWidth, boxHeight, trolleyWidth), material);
+    box.position.set(0, trolleyHeight / 2 - boxHeight / 2, 0);
+
+    var wheel1 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), material);
+    wheel1.rotation.set(Math.PI / 2, 0, 0);
+    wheel1.position.set(-trolleyWidth / 2 + wheelHeigth / 2, -trolleyHeight / 2 + wheelHeigth / 2, 0);
+
+    var wheel2 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), material);
+    wheel2.rotation.set(Math.PI / 2, 0, 0);
+    wheel2.position.set(trolleyWidth / 2 - wheelHeigth / 2, -trolleyHeight / 2 + wheelHeigth / 2, 0);
+    
+    var trolley = new THREE.Object3D();
+    trolley.add(box);
+    trolley.add(wheel1);
+    trolley.add(wheel2);
+    trolley.position.set(x, y, z);   
 
     parent.add(trolley);
 }
