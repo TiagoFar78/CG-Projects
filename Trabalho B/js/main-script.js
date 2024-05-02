@@ -396,6 +396,21 @@ function isInContact(lowerXCorner1, lowerZCorner1, upperXCorner1, upperZCorner1,
 }
 
 function createRandomCargoGeometry(length, height, width) {
+    var randomValue = generateRandomNumber(cargoAmount, 0);
+
+    switch(randomValue) {
+        case 0:
+            return new THREE.BoxGeometry(length, height, width);
+        case 1:
+            return new THREE.DodecahedronGeometry(width);
+        case 2:
+            return new THREE.IcosahedronGeometry(width);
+        case 3:
+            return new THREE.TorusGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4 );
+        case 4:
+            return new THREE.TorusKnotGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4 );
+      }
+
     return new THREE.BoxGeometry(length, height, width);
 }
 
