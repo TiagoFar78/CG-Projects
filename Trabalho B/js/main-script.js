@@ -4,8 +4,8 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-const clawSize = 5;
-const clawDistanceFromCenter = clawSize * 5;
+const clawSize = 7.5;
+const clawDistanceFromCenter = 25;
 const baseHookHeight = clawDistanceFromCenter / 2;
 
 const cableInitialHeight = 30;
@@ -181,29 +181,43 @@ function createTrolleyGroup(parent, x, y, z) {
 function createHook(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    dedo1 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
-    dedo1.position.set(clawDistanceFromCenter, 0, 0);
-    dedo2 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
-    dedo2.position.set(clawDistanceFromCenter, 0, clawDistanceFromCenter);
-    dedo3 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
-    dedo3.position.set(0, 0, clawDistanceFromCenter);
-    dedo4 = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
-    dedo4.position.set(0, 0, 0);
-
-    var baseGarra = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseHookHeight, clawDistanceFromCenter), material);
-    // mudar a altura porque não é bem clawSize que é suposto estar ali.
-    baseGarra.position.set(clawDistanceFromCenter / 2, clawSize + baseHookHeight / 2, clawDistanceFromCenter / 2);
+    var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
+    var baseHook = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseHookHeight, clawDistanceFromCenter), material);
+    baseHook.position.set(0, clawHeight * 2 + baseHookHeight / 2, 0);
 
     hook = new THREE.Object3D();
-    hook.add(baseGarra);
-    hook.add(dedo1);
-    hook.add(dedo2);
-    hook.add(dedo3);
-    hook.add(dedo4);
+    hook.add(baseHook);
+    createClaw(hook, 0, 0, clawDistanceFromCenter / 2, 0);
+    createClaw(hook, clawDistanceFromCenter / 2, 0, 0, Math.PI / 2);
+    createClaw(hook, 0, 0, -clawDistanceFromCenter / 2, Math.PI);
+    createClaw(hook, -clawDistanceFromCenter / 2, 0, 0, -Math.PI / 2);
 
-    hook.position.set(x - clawDistanceFromCenter / 2, y - clawSize - baseHookHeight / 2, z - clawDistanceFromCenter / 2);
+    hook.position.set(x, y - clawSize - baseHookHeight / 2, z);
 
     parent.add(hook);
+}
+
+function createClaw(parent, x, y, z, rotationY) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
+    var angleAlignedWithFloor = Math.PI * 54.5 / 180;
+
+    var clawSuperior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
+    clawSuperior.rotation.set(angleAlignedWithFloor, -Math.PI / 4, 0);
+    clawSuperior.position.set(0, clawHeight / 2, 0);
+
+    var clawInferior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
+    clawInferior.rotation.set(-angleAlignedWithFloor + Math.PI, -Math.PI / 4, 0);
+    clawInferior.position.set(0, -clawHeight / 2, 0);
+
+    var claw = new THREE.Object3D();
+    claw.add(clawSuperior);
+    claw.add(clawInferior);
+    claw.rotation.set(0, rotationY, 0);
+    claw.position.set(x, y, z);
+
+    parent.add(claw);
 }
 
 function createCable(parent, x, y, z) {
