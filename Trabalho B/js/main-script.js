@@ -102,6 +102,8 @@ var cargoUpperZCorners = [];
 
 var keysPressed = {};
 
+var mobileCameraEnabled = false;
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -111,7 +113,7 @@ function createScene() {
     scene = new THREE.Scene();
 
     // Set background color to white
-    scene.background = new THREE.Color(0xffffff); // TODO escolher cor clara?
+    scene.background = new THREE.Color(0xffffff); // TODO escolher outra cor clara?
 
     scene.add(new THREE.AxesHelper(10));
 
@@ -456,26 +458,44 @@ function update(){
 
     if (keysPressed[81] || keysPressed[113]) { // Q
         rotateSuperiorCraneLeft();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
 
     if (keysPressed[65] || keysPressed[97]) { // A
         rotateSuperiorCraneRight();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
     
     if (keysPressed[87] || keysPressed[119]) { // W
         moveTrolleyLeft();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
     
     if (keysPressed[83] || keysPressed[115]) { // S
         moveTrolleyRight();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
     
     if (keysPressed[69] || keysPressed[101]) { // E
         moveHookDown();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
     
     if (keysPressed[68] || keysPressed[100]) { // D
         moveHookUp();
+        if(mobileCameraEnabled){
+            createMobileCamera();
+        }
     }
     
     if (keysPressed[82] || keysPressed[114]) { // R
@@ -557,6 +577,8 @@ function createFrontalCamera() {
     // Set camera position and orientation
     camera.position.set(0, 0, 200);
     camera.lookAt(scene.position);
+
+    mobileCameraEnabled = false;
 }
 
 function createLateralCamera() {
@@ -576,6 +598,8 @@ function createLateralCamera() {
     // Set camera position and orientation
     camera.position.set(200, 0, 0);
     camera.lookAt(scene.position);
+
+    mobileCameraEnabled = false;
 }
 
 function createTopCamera() {
@@ -595,7 +619,56 @@ function createTopCamera() {
     // Set camera position and orientation
     camera.position.set(0, 200, 0);
     camera.lookAt(scene.position);
+
+    mobileCameraEnabled = false;
 }
+
+function createFixedOrthogonalCamera() {
+    'use strict';
+    var near = 1;
+    var far = 1000;
+
+    // Create orthogonal camera
+    camera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, near, far);
+    // Set camera position and orientation
+    camera.position.set(300, 500, 300);
+    camera.lookAt(scene.position);
+
+    mobileCameraEnabled = false;
+}
+
+
+function createFixedPerspectiveCamera() {
+    'use strict';
+    var near = 1;
+    var far = 1000;
+
+    // Create perspective camera
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, near, far);
+    // Set camera position and orientation
+    camera.position.set(300, 500, 300);
+    camera.lookAt(scene.position);
+
+    mobileCameraEnabled = false;
+}
+
+function createMobileCamera() {
+    'use strict';
+
+    // Create perspective camera
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+
+    var hookGlobalPosition = new THREE.Vector3();
+    hook.getWorldPosition(hookGlobalPosition);
+
+    // Set camera position to be on the crane hook
+    camera.position.set(trolleyGroup.position.x, hookGlobalPosition.y, trolleyGroup.position.z);
+    // Set camera orientation to look at the target position
+    camera.lookAt(scene.position);
+
+    mobileCameraEnabled = true;
+}
+
 
 function rotateSuperiorCraneLeft() {
     'use strict';
@@ -727,6 +800,21 @@ function onKeyDown(e) {
         key4.classList.toggle('active', true);
         createTopCamera();
         break;
+    case 53: //5
+        var key5 = document.getElementById('key5');
+        key5.classList.toggle('active', true);
+        createFixedOrthogonalCamera();
+        break;
+    case 54: //6
+        var key6 = document.getElementById('key6');
+        key6.classList.toggle('active', true);
+        createFixedPerspectiveCamera();
+        break;
+    case 55: //7
+        var key7 = document.getElementById('key7');
+        key7.classList.toggle('active', true);
+        createMobileCamera();
+        break;
   }
 
 }
@@ -795,6 +883,18 @@ function onKeyUp(e){
     case 52: //4
         var key4 = document.getElementById('key4');
         key4.classList.toggle('active', false);
+        break;
+    case 53: //5
+        var key5 = document.getElementById('key5');
+        key5.classList.toggle('active', false);
+        break;
+    case 54: //6
+        var key6 = document.getElementById('key6');
+        key6.classList.toggle('active', false);
+        break;
+    case 55: //7
+        var key7 = document.getElementById('key7');
+        key7.classList.toggle('active', false);
         break;
   }
 }
