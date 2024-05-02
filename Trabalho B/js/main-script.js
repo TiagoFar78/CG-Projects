@@ -41,6 +41,8 @@ const counterLanceX = -lanceCarrierWidth / 2 - counterLanceLength / 2;
 const counterLanceY = counterLanceHeight / 2;
 const counterLanceZ = 0;
 
+const rodRadius = 1;
+
 const counterWeightWidth = craneWidth;
 const counterWeightHeight = counterLanceWidth;
 const counterWeightX = counterLanceX;
@@ -162,6 +164,10 @@ function createSuperiorCrane(parent, x, y, z) {
     createLanceCarrier(superiorCrane, lanceCarrierX, lanceCarrierY, lanceCarrierZ);
     createLance(superiorCrane, lanceX, lanceY, lanceZ);
     createCounterLance(superiorCrane, counterLanceX, counterLanceY, counterLanceZ);
+    createRod(superiorCrane, lanceCarrierX + lanceCarrierWidth / 2, lanceCarrierY + lanceCarrierHeight / 2, lanceCarrierZ + lanceWidth / 2, -Math.PI * 2 / 3);
+    createRod(superiorCrane, lanceCarrierX + lanceCarrierWidth / 2, lanceCarrierY + lanceCarrierHeight / 2, lanceCarrierZ - lanceWidth / 2, -Math.PI * 2 / 3);
+    createRod(superiorCrane, lanceCarrierX - lanceCarrierWidth / 2, lanceCarrierY + lanceCarrierHeight / 2, lanceCarrierZ + lanceWidth / 2, Math.PI * 3 / 4);
+    createRod(superiorCrane, lanceCarrierX - lanceCarrierWidth / 2, lanceCarrierY + lanceCarrierHeight / 2, lanceCarrierZ - lanceWidth / 2, Math.PI * 3 / 4);
     createCounterWeight(superiorCrane, counterWeightX, counterWeightY, counterWeightZ);
     createCabin(superiorCrane, cabineX, cabineY, cabineZ);
     superiorCrane.position.set(x, y, z);
@@ -171,7 +177,6 @@ function createSuperiorCrane(parent, x, y, z) {
 
 function createTrolleyGroup(parent, x, y, z) {
     trolleyGroup = new THREE.Object3D();
-    // mudar a altura porque não é bem clawSize que é suposto tar ali
     createHook(trolleyGroup, 0, -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight, 0);
     createCable(trolleyGroup, 0, -cableInitialHeight / 2, 0);
     createTrolley(trolleyGroup, trolleyX, trolleyY, trolleyZ);
@@ -302,6 +307,19 @@ function createLanceCarrier(parent, x, y, z) {
     lanceCarrier.position.set(x, y, z);
 
     parent.add(lanceCarrier);
+}
+
+function createRod(parent, x, y, z, rotationZ) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+
+    var size = (y - lanceHeight) / Math.cos(rotationZ);
+    var sideLength = Math.tan(rotationZ) * (y - lanceHeight);
+    
+    var rod = new THREE.Mesh(new THREE.CylinderGeometry(rodRadius, rodRadius, size, 8), material);
+    rod.rotation.set(0, 0, rotationZ);
+    rod.position.set(x + sideLength / 2, y - (y - lanceHeight) / 2, z);
+
+    parent.add(rod);
 }
 
 function createCabin(parent, x, y, z) {
