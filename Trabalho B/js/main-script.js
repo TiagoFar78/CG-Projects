@@ -4,7 +4,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-const clawSize = 7.5;
+const clawSize = 5;
 const clawDistanceFromCenter = 25;
 const baseHookHeight = clawDistanceFromCenter / 2;
 
@@ -86,16 +86,23 @@ const cargoAmount = 5;
 
 const superiorCraneStep = Math.PI / 180;
 const trolleyStep = 1;
+const trolleyLeftLimit = lanceCarrierWidth / 2 + trolleyWidth / 2;
+const trolleyRightLimit = lanceLength;
 const hookStep = 2;
 const cablesStep = hookStep/2;
 const cablesScale = cablesStep/15;
+const hookUpperLimit = -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight;
+const hookLowerLimit = -(towerHeight + baseHeigth - clawSize);
+const clawStep = Math.PI / 90;
+const clawUpperLimit = Math.PI / 3;
+const clawLowerLimit = 0;
 
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
 var camera, scene, renderer;
 
-var superiorCrane, trolleyGroup, hook, cables, dedo1, dedo2, dedo3, dedo4;
+var superiorCrane, trolleyGroup, hook, cables, claws = [];
 
 var cargoLowerXCorners = [];
 var cargoLowerZCorners = [];
@@ -194,17 +201,33 @@ function createHook(parent, x, y, z) {
 
     hook = new THREE.Object3D();
     hook.add(baseHook);
-    createClaw(hook, 0, 0, clawDistanceFromCenter / 2, 0);
-    createClaw(hook, clawDistanceFromCenter / 2, 0, 0, Math.PI / 2);
-    createClaw(hook, 0, 0, -clawDistanceFromCenter / 2, Math.PI);
-    createClaw(hook, -clawDistanceFromCenter / 2, 0, 0, -Math.PI / 2);
+
+    var clawPivot1 = new THREE.Object3D();
+    clawPivot1.position.set(0, clawHeight * 2, clawDistanceFromCenter / 2);
+    hook.add(clawPivot1);
+    createClaw(clawPivot1, 0, -(clawHeight * 2), 0);
+
+    var clawPivot2 = new THREE.Object3D();
+    clawPivot2.position.set(clawDistanceFromCenter / 2, clawHeight * 2, 0);
+    hook.add(clawPivot2);
+    createClaw(clawPivot2, 0, -(clawHeight * 2), 0);
+
+    var clawPivot3 = new THREE.Object3D();
+    clawPivot3.position.set(0, clawHeight * 2, -clawDistanceFromCenter / 2);
+    hook.add(clawPivot3);
+    createClaw(clawPivot3, 0, -(clawHeight * 2), 0);
+
+    var clawPivot4 = new THREE.Object3D();
+    clawPivot4.position.set(-clawDistanceFromCenter / 2, clawHeight * 2, 0);
+    hook.add(clawPivot4);
+    createClaw(clawPivot4, 0, -(clawHeight * 2), 0);
 
     hook.position.set(x, y - clawSize - baseHookHeight / 2, z);
 
     parent.add(hook);
 }
 
-function createClaw(parent, x, y, z, rotationY) {
+function createClaw(parent, x, y, z) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
     var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
@@ -221,10 +244,12 @@ function createClaw(parent, x, y, z, rotationY) {
     var claw = new THREE.Object3D();
     claw.add(clawSuperior);
     claw.add(clawInferior);
-    claw.rotation.set(0, rotationY, 0);
     claw.position.set(x, y, z);
+    claw.rotation.set(0, 0, 0);
 
     parent.add(claw);
+    claws.push(claw);
+
 }
 
 function createCable(parent, x, y, z) {
@@ -705,7 +730,7 @@ function rotateSuperiorCraneRight() {
 function moveTrolleyLeft() {
     'use strict';
 
-    if((trolleyGroup.position.x - trolleyStep) >= (lanceCarrierWidth / 2 + trolleyWidth / 2)) {
+    if((trolleyGroup.position.x - trolleyStep) >= trolleyLeftLimit) {
         trolleyGroup.position.x -= trolleyStep;
     }
 }
@@ -713,7 +738,7 @@ function moveTrolleyLeft() {
 function moveTrolleyRight() {
     'use strict';
 
-    if((trolleyGroup.position.x + trolleyStep) <= lanceLength) {
+    if((trolleyGroup.position.x + trolleyStep) <= trolleyRightLimit) {
         trolleyGroup.position.x += trolleyStep;
     }
 }
@@ -721,7 +746,7 @@ function moveTrolleyRight() {
 function moveHookDown() {
     'use strict';
 
-    if((hook.position.y - hookStep) >= -(towerHeight + baseHeigth - clawSize)) {
+    if((hook.position.y - hookStep) >= hookLowerLimit) {
         hook.position.y -= hookStep;
         cables.position.y -= cablesStep;
         cables.scale.y += cablesScale;
@@ -731,7 +756,7 @@ function moveHookDown() {
 function moveHookUp() {
     'use strict';
 
-    if((hook.position.y + hookStep) <= -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight) {
+    if((hook.position.y + hookStep) <= hookUpperLimit) {
         hook.position.y += hookStep;
         cables.position.y += cablesStep;
         cables.scale.y -= cablesScale;
@@ -740,12 +765,50 @@ function moveHookUp() {
 
 function closeClaw() {
     'use strict';
+    
+    if((claws[0].rotation.x + Math.PI / 90) <= clawUpperLimit) {
+        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep);
+        claws[0].applyMatrix4(rotationMatrixX0);
+    }
+    
+    if((claws[1].rotation.z - Math.PI / 90) >= -clawUpperLimit) {
+        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep);
+        claws[1].applyMatrix4(rotationMatrixZ1);
+    }
 
+    if((claws[2].rotation.x - Math.PI / 90) >= -clawUpperLimit) {
+        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep);
+        claws[2].applyMatrix4(rotationMatrixX2);
+    }
+
+    if((claws[3].rotation.z + Math.PI / 90) <= clawUpperLimit) { 
+        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep);
+        claws[3].applyMatrix4(rotationMatrixZ3);
+    }
 }
 
 function openClaw() {
     'use strict';
 
+    if((claws[0].rotation.x - Math.PI / 90) >= clawLowerLimit) {
+        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep);
+        claws[0].applyMatrix4(rotationMatrixX0);
+    }
+    
+    if((claws[1].rotation.z + Math.PI / 90) <= clawLowerLimit) {
+        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep);
+        claws[1].applyMatrix4(rotationMatrixZ1);
+    }
+
+    if((claws[2].rotation.x + Math.PI / 90) <= clawLowerLimit) {
+        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep);
+        claws[2].applyMatrix4(rotationMatrixX2);
+    }
+
+    if((claws[3].rotation.z - Math.PI / 90) >= clawLowerLimit) { 
+        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep);
+        claws[3].applyMatrix4(rotationMatrixZ3);
+    }
 }
 
 function onKeyDown(e) {
