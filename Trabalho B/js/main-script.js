@@ -80,6 +80,7 @@ const cargoMinLength = 30;
 const cargoMaxHeight = 70;
 const cargoMinHeight = 25;
 const cargoMaxDistanceFromBase = lanceLength * 8 / 10;
+const cargoAmount = 5;
 
 const superiorCraneStep = Math.PI / 180;
 const trolleyStep = 1;
@@ -117,7 +118,9 @@ function createScene() {
     createCrane();
     createContainer();
 
-    createCargo();
+    for (var i = 0; i < cargoAmount; i++) {
+        createCargo();
+    }
 }
 
 //////////////////////
@@ -339,8 +342,8 @@ function createCargo() {
     var length = generateRandomNumber(cargoMaxLength, cargoMinLength);
     var width = generateRandomNumber(cargoMaxWidth, cargoMinWidth);
 
-    var x = generateRandomNumber(cargoMaxDistanceFromBase, baseWidth / 2 + length / 2);
-    var z = generateRandomNumber(cargoMaxDistanceFromBase, baseWidth / 2 + width / 2);
+    var x = generateRandomNumber(cargoMaxDistanceFromBase, -cargoMaxDistanceFromBase);
+    var z = generateRandomNumber(cargoMaxDistanceFromBase, -cargoMaxDistanceFromBase);
 
     if (!isValidCargoPosition(x - length / 2, z - width / 2, x + length / 2, z + width / 2)) {
         createCargo();
@@ -352,11 +355,44 @@ function createCargo() {
     var mesh = new THREE.Mesh(createRandomCargoGeometry(length, height, width), material);
     mesh.position.set(x, height / 2, z);
 
+    var index = cargoLowerXCorners.length;
+    cargoLowerXCorners[index] = x - length / 2;
+    cargoLowerZCorners[index] = z - width / 2;
+    cargoUpperXCorners[index] = x + length / 2;
+    cargoUpperZCorners[index] = z + width / 2;
+
     scene.add(mesh);
 }
 
 function isValidCargoPosition(lowerXCorner, lowerZCorner, upperXCorner, upperZCorner) {
-    return true;
+    for (var i = 0; i < cargoLowerXCorners.length; i++) {
+        if (isInContact(lowerXCorner, lowerZCorner, upperXCorner, upperZCorner, 
+                cargoLowerXCorners[i], cargoLowerZCorners[i], cargoUpperXCorners[i], cargoUpperZCorners[i])) {
+            return false;
+        }
+    }
+
+    var baseLowerX = baseX - baseWidth / 2;
+    var baseLowerZ = baseZ - baseWidth / 2;
+    var baseUpperX = baseX + baseWidth / 2;
+    var baseUpperZ = baseZ + baseWidth / 2;
+    var isInsideBase = isInContact(lowerXCorner, lowerZCorner, upperXCorner, upperZCorner, baseLowerX, baseLowerZ, baseUpperX, baseUpperZ);
+
+    var containerLowerX = containerX - containerLength / 2;
+    var containerLowerZ = containerZ - containerWidth / 2;
+    var containerUpperX = containerX + containerLength / 2;
+    var containerUpperZ = containerZ + containerWidth / 2;
+    var isInsideContainer = isInContact(lowerXCorner, lowerZCorner, upperXCorner, upperZCorner, 
+            containerLowerX, containerLowerZ, containerUpperX, containerUpperZ);
+
+    return !isInsideBase && !isInsideContainer;
+}
+
+function isInContact(lowerXCorner1, lowerZCorner1, upperXCorner1, upperZCorner1, lowerXCorner2, lowerZCorner2, upperXCorner2, upperZCorner2) {
+    var isXOverlap = upperXCorner1 >= lowerXCorner2 && lowerXCorner1 <= upperXCorner2;
+    var isZOverlap = upperZCorner1 >= lowerZCorner2 && lowerZCorner1 <= upperZCorner2;
+
+    return isXOverlap && isZOverlap;
 }
 
 function createRandomCargoGeometry(length, height, width) {
