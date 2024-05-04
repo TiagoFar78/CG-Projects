@@ -102,7 +102,7 @@ const clawLowerLimit = 0;
 //////////////////////
 var camera, scene, renderer;
 
-var superiorCrane, trolleyGroup, hook, cables, claws = [];
+var superiorCrane, trolleyGroup, hook, cables, claws = [], cargos = [];
 
 var cargoLowerXCorners = [];
 var cargoLowerZCorners = [];
@@ -223,6 +223,13 @@ function createHook(parent, x, y, z) {
     createClaw(clawPivot4, 0, -(clawHeight * 2), 0);
 
     hook.position.set(x, y - clawSize - baseHookHeight / 2, z);
+
+    // Create a bounding sphere for the hook
+    var hookGeometry = new THREE.SphereGeometry(clawDistanceFromCenter / 2);
+    var hookBoundingSphere = new THREE.Mesh(hookGeometry, material);
+    hookBoundingSphere.position.copy(hook.position); // Set the position of the bounding sphere to match the hook
+    hookBoundingSphere.visible = false; // Hide the bounding sphere
+    hook.add(hookBoundingSphere); // Add the bounding sphere to the hook
 
     parent.add(hook);
 }
@@ -420,6 +427,15 @@ function createCargo() {
     cargoUpperXCorners[index] = x + length / 2;
     cargoUpperZCorners[index] = z + width / 2;
 
+    // Create a bounding sphere for the cargo
+    var cargoBoundingSphereGeometry = new THREE.SphereGeometry(Math.max(length, width, height) / 2);
+    var cargoBoundingSphere = new THREE.Mesh(cargoBoundingSphereGeometry, material);
+    cargoBoundingSphere.position.copy(mesh.position);
+    cargoBoundingSphere.visible = false;
+    mesh.add(cargoBoundingSphere);
+
+    cargos.push(mesh);
+
     scene.add(mesh);
 }
 
@@ -480,9 +496,25 @@ function generateRandomNumber(max, min) {
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
-function checkCollisions(){
-    'use strict';
+function checkCollisions() {
+    var hookPosition = new THREE.Vector3();
+    hook.getWorldPosition(hookPosition);
 
+    var hookBoundingSphereRadius = hook.children[5].geometry.parameters.radius;
+
+    for (var i = 0; i < cargos.length; i++) {
+        var cargo = cargos[i];
+        var cargoPosition = new THREE.Vector3();
+        cargo.getWorldPosition(cargoPosition);
+        var distance = hookPosition.distanceTo(cargoPosition);
+
+        var cargoBoundingSphereRadius = cargo.children[0].geometry.parameters.radius;
+        
+        if (distance < hookBoundingSphereRadius + cargoBoundingSphereRadius) {
+            console.log("Collision detected between hook and cargo " + i);
+            handleCollisions();
+        }
+    }
 }
 
 ///////////////////////
@@ -490,7 +522,7 @@ function checkCollisions(){
 ///////////////////////
 function handleCollisions(){
     'use strict';
-
+    // TODO: animação
 }
 
 ////////////
@@ -548,6 +580,7 @@ function update(){
     if (keysPressed[70] || keysPressed[102]) { // F
         openClaw();
     }
+    checkCollisions();
 }
 
 /////////////
