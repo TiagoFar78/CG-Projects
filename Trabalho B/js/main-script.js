@@ -693,7 +693,7 @@ function createTopCamera() {
     // Create top camera
     camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
     // Set camera position and orientation
-    camera.position.set(0, 200, 0);
+    camera.position.set(0, 400, 0);
     camera.lookAt(scene.position);
 
     mobileCameraEnabled = false;
