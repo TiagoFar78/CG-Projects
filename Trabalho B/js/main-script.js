@@ -535,44 +535,26 @@ function update(){
 
     if (keysPressed[81] || keysPressed[113]) { // Q
         rotateSuperiorCraneLeft(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
 
     if (keysPressed[65] || keysPressed[97]) { // A
         rotateSuperiorCraneRight(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
     
     if (keysPressed[87] || keysPressed[119]) { // W
         moveTrolleyLeft(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
     
     if (keysPressed[83] || keysPressed[115]) { // S
         moveTrolleyRight(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
     
     if (keysPressed[69] || keysPressed[101]) { // E
         moveHookDown(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
     
     if (keysPressed[68] || keysPressed[100]) { // D
         moveHookUp(delta);
-        if(mobileCameraEnabled){
-            createMobileCamera();
-        }
     }
     
     if (keysPressed[82] || keysPressed[114]) { // R
@@ -581,6 +563,9 @@ function update(){
     
     if (keysPressed[70] || keysPressed[102]) { // F
         openClaw(delta);
+    }
+    if(mobileCameraEnabled){
+        createMobileCamera();
     }
     checkCollisions();
 }
@@ -735,15 +720,12 @@ function createFixedPerspectiveCamera() {
 function createMobileCamera() {
     'use strict';
 
-    // Create perspective camera
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
 
     var hookGlobalPosition = new THREE.Vector3();
     hook.getWorldPosition(hookGlobalPosition);
 
-    // Set camera position to be on the crane hook
-    camera.position.set(trolleyGroup.position.x, hookGlobalPosition.y, trolleyGroup.position.z);
-    // Set camera orientation to look at the target position
+    camera.position.set(hookGlobalPosition.x, hookGlobalPosition.y, hookGlobalPosition.z);
     camera.lookAt(scene.position);
 
     mobileCameraEnabled = true;
