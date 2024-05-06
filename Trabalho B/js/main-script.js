@@ -84,23 +84,23 @@ const cargoMinHeight = 25;
 const cargoMaxDistanceFromBase = lanceLength * 8 / 10;
 const cargoAmount = 5;
 
-const superiorCraneStep = Math.PI / 180;
-const trolleyStep = 1;
+const superiorCraneStep = Math.PI / 3;
+const trolleyStep = 50;
 const trolleyLeftLimit = lanceCarrierWidth / 2 + trolleyWidth / 2;
 const trolleyRightLimit = lanceLength;
-const hookStep = 2;
+const hookStep = 50;
 const cablesStep = hookStep/2;
 const cablesScale = cablesStep/15;
 const hookUpperLimit = -clawSize / 2 - baseHookHeight / 2 - cableInitialHeight;
 const hookLowerLimit = -(towerHeight + baseHeigth - clawSize);
-const clawStep = Math.PI / 90;
+const clawStep = Math.PI / 4;
 const clawUpperLimit = Math.PI / 3;
 const clawLowerLimit = 0;
 
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-var camera, scene, renderer;
+var camera, scene, renderer, clock;
 
 var superiorCrane, trolleyGroup, hook, cables, claws = [], cargos = [];
 
@@ -531,54 +531,56 @@ function handleCollisions(){
 function update(){
     'use strict';
 
+    var delta = clock.getDelta();
+
     if (keysPressed[81] || keysPressed[113]) { // Q
-        rotateSuperiorCraneLeft();
+        rotateSuperiorCraneLeft(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
 
     if (keysPressed[65] || keysPressed[97]) { // A
-        rotateSuperiorCraneRight();
+        rotateSuperiorCraneRight(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
     
     if (keysPressed[87] || keysPressed[119]) { // W
-        moveTrolleyLeft();
+        moveTrolleyLeft(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
     
     if (keysPressed[83] || keysPressed[115]) { // S
-        moveTrolleyRight();
+        moveTrolleyRight(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
     
     if (keysPressed[69] || keysPressed[101]) { // E
-        moveHookDown();
+        moveHookDown(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
     
     if (keysPressed[68] || keysPressed[100]) { // D
-        moveHookUp();
+        moveHookUp(delta);
         if(mobileCameraEnabled){
             createMobileCamera();
         }
     }
     
     if (keysPressed[82] || keysPressed[114]) { // R
-        closeClaw();
+        closeClaw(delta);
     }
     
     if (keysPressed[70] || keysPressed[102]) { // F
-        openClaw();
+        openClaw(delta);
     }
     checkCollisions();
 }
@@ -601,6 +603,8 @@ function init() {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+    clock = new THREE.Clock();
 
     createScene();
     createCamera();
@@ -746,100 +750,100 @@ function createMobileCamera() {
 }
 
 
-function rotateSuperiorCraneLeft() {
-    'use strict';
-
-    var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), -superiorCraneStep);
-    superiorCrane.applyMatrix4(rotationMatrix);
-}
-
-function rotateSuperiorCraneRight() {
-    'use strict';
-
-    var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), superiorCraneStep);
-    superiorCrane.applyMatrix4(rotationMatrix);
-}
-
-function moveTrolleyLeft() {
-    'use strict';
-
-    if((trolleyGroup.position.x - trolleyStep) >= trolleyLeftLimit) {
-        trolleyGroup.position.x -= trolleyStep;
-    }
-}
-
-function moveTrolleyRight() {
-    'use strict';
-
-    if((trolleyGroup.position.x + trolleyStep) <= trolleyRightLimit) {
-        trolleyGroup.position.x += trolleyStep;
-    }
-}
-
-function moveHookDown() {
-    'use strict';
-
-    if((hook.position.y - hookStep) >= hookLowerLimit) {
-        hook.position.y -= hookStep;
-        cables.position.y -= cablesStep;
-        cables.scale.y += cablesScale;
-    }
-}
-
-function moveHookUp() {
-    'use strict';
-
-    if((hook.position.y + hookStep) <= hookUpperLimit) {
-        hook.position.y += hookStep;
-        cables.position.y += cablesStep;
-        cables.scale.y -= cablesScale;
-    }
-}
-
-function closeClaw() {
+function rotateSuperiorCraneLeft(delta) {
     'use strict';
     
-    if((claws[0].rotation.x + Math.PI / 90) <= clawUpperLimit) {
-        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep);
+    var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), -superiorCraneStep * delta);
+    superiorCrane.applyMatrix4(rotationMatrix);
+}
+
+function rotateSuperiorCraneRight(delta) {
+    'use strict';
+
+    var rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), superiorCraneStep * delta);
+    superiorCrane.applyMatrix4(rotationMatrix);
+}
+
+function moveTrolleyLeft(delta) {
+    'use strict';
+
+    if((trolleyGroup.position.x - trolleyStep * delta) >= trolleyLeftLimit) {
+        trolleyGroup.position.x -= trolleyStep * delta;
+    }
+}
+
+function moveTrolleyRight(delta) {
+    'use strict';
+
+    if((trolleyGroup.position.x + trolleyStep * delta) <= trolleyRightLimit) {
+        trolleyGroup.position.x += trolleyStep * delta;
+    }
+}
+
+function moveHookDown(delta) {
+    'use strict';
+
+    if((hook.position.y - hookStep * delta) >= hookLowerLimit) {
+        hook.position.y -= hookStep * delta;
+        cables.position.y -= cablesStep * delta;
+        cables.scale.y += cablesScale * delta;
+    }
+}
+
+function moveHookUp(delta) {
+    'use strict';
+
+    if((hook.position.y + hookStep * delta) <= hookUpperLimit) {
+        hook.position.y += hookStep * delta;
+        cables.position.y += cablesStep * delta;
+        cables.scale.y -= cablesScale * delta;
+    }
+}
+
+function closeClaw(delta) {
+    'use strict';
+    
+    if((claws[0].rotation.x + clawStep * delta) <= clawUpperLimit) {
+        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep * delta);
         claws[0].applyMatrix4(rotationMatrixX0);
     }
     
-    if((claws[1].rotation.z - Math.PI / 90) >= -clawUpperLimit) {
-        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep);
+    if((claws[1].rotation.z - clawStep * delta) >= -clawUpperLimit) {
+        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep * delta);
         claws[1].applyMatrix4(rotationMatrixZ1);
     }
 
-    if((claws[2].rotation.x - Math.PI / 90) >= -clawUpperLimit) {
-        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep);
+    if((claws[2].rotation.x - clawStep * delta) >= -clawUpperLimit) {
+        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep * delta);
         claws[2].applyMatrix4(rotationMatrixX2);
     }
 
-    if((claws[3].rotation.z + Math.PI / 90) <= clawUpperLimit) { 
-        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep);
+    if((claws[3].rotation.z + clawStep * delta) <= clawUpperLimit) { 
+        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep * delta);
         claws[3].applyMatrix4(rotationMatrixZ3);
     }
 }
 
-function openClaw() {
+function openClaw(delta) {
     'use strict';
 
-    if((claws[0].rotation.x - Math.PI / 90) >= clawLowerLimit) {
-        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep);
+    if((claws[0].rotation.x - clawStep * delta) >= clawLowerLimit) {
+        var rotationMatrixX0 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), -clawStep * delta);
         claws[0].applyMatrix4(rotationMatrixX0);
     }
     
-    if((claws[1].rotation.z + Math.PI / 90) <= clawLowerLimit) {
-        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep);
+    if((claws[1].rotation.z + clawStep * delta) <= clawLowerLimit) {
+        var rotationMatrixZ1 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), clawStep * delta);
         claws[1].applyMatrix4(rotationMatrixZ1);
     }
 
-    if((claws[2].rotation.x + Math.PI / 90) <= clawLowerLimit) {
-        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep);
+    if((claws[2].rotation.x + clawStep * delta) <= clawLowerLimit) {
+        var rotationMatrixX2 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(1, 0, 0), clawStep * delta);
         claws[2].applyMatrix4(rotationMatrixX2);
     }
 
-    if((claws[3].rotation.z - Math.PI / 90) >= clawLowerLimit) { 
-        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep);
+    if((claws[3].rotation.z - clawStep * delta) >= clawLowerLimit) { 
+        var rotationMatrixZ3 = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 0, 1), -clawStep * delta);
         claws[3].applyMatrix4(rotationMatrixZ3);
     }
 }
