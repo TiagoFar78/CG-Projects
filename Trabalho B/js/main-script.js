@@ -418,8 +418,7 @@ function createCargo() {
 
     var height = generateRandomNumber(cargoMaxHeight, cargoMinHeight);
 
-    var mesh = new THREE.Mesh(createRandomCargoGeometry(length, height, width), material);
-    mesh.position.set(x, height / 2, z);
+    var mesh = createRandomCargo(length, height, width, x, z, material);
 
     var index = cargoLowerXCorners.length;
     cargoLowerXCorners[index] = x - length / 2;
@@ -470,23 +469,58 @@ function isInContact(lowerXCorner1, lowerZCorner1, upperXCorner1, upperZCorner1,
     return isXOverlap && isZOverlap;
 }
 
-function createRandomCargoGeometry(length, height, width) {
+function createRandomCargo(length, height, width, x, z, material) {
     var randomValue = generateRandomNumber(cargoAmount, 0);
+    var geometry;
+    var y;
 
     switch(randomValue) {
         case 0:
-            return new THREE.BoxGeometry(length, height, width);
+            geometry = new THREE.BoxGeometry(length, height, width);
+            y = height / 2;
+            break;
         case 1:
-            return new THREE.DodecahedronGeometry(width);
+            geometry = new THREE.DodecahedronGeometry(width);
+            y = width - dodecahedronY(width);
+            break;
         case 2:
-            return new THREE.IcosahedronGeometry(width);
+            geometry = new THREE.IcosahedronGeometry(width);
+            y = width - icosahedronY(width);
+            break;
         case 3:
-            return new THREE.TorusGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4 );
+            geometry = new THREE.TorusGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4);
+            y = torusY(width / 2 / 1.4, width * 0.4 / 2 / 1.4);
+            break;
         case 4:
-            return new THREE.TorusKnotGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4 );
-      }
+            geometry = new THREE.TorusKnotGeometry(width / 2 / 1.4, width * 0.4 / 2 / 1.4);
+            y = torusKnotY(width / 2 / 1.4, width * 0.4 / 2 / 1.4);
+            break;
+    }
 
-    return new THREE.BoxGeometry(length, height, width);
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+
+    return mesh;
+}
+
+function dodecahedronY(radius) {
+    var edge = (Math.sqrt(5) - 1) * radius / Math.sqrt(3);
+    var cathet = Math.sqrt(Math.pow(radius, 2) - Math.pow(edge / 2, 2));
+    return radius - cathet;
+}
+
+function icosahedronY(radius) {
+    var edge = radius / Math.sin(2 * Math.PI / 5);
+    var cathet = Math.sqrt(Math.pow(radius, 2) - Math.pow(edge / 2, 2));
+    return radius - cathet;
+}
+
+function torusY(radius, tubeRadius) {
+    return radius + tubeRadius;
+}
+
+function torusKnotY(radius, tubeRadius) {
+    return radius + tubeRadius * 2;
 }
 
 function generateRandomNumber(max, min) {
