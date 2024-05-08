@@ -628,8 +628,14 @@ function update(){
         if(phase1 && hookGlobalPosition.y <= 220) {
             //console.log("y1:" + hookGlobalPosition.y); // TODO remove
             moveHookUp(delta);
+        }        
+        else if(hookGlobalPosition.z >= 0 &&
+            !(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
+            phase1 = false;
+            rotateSuperiorCraneRight(delta); // TODO put an if statement to also use rotateRight?
         }
-        else if(!(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
+        else if(hookGlobalPosition.z < 0 &&
+            !(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
             phase1 = false;
             rotateSuperiorCraneLeft(delta); // TODO put an if statement to also use rotateRight?
         }
