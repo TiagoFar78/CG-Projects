@@ -802,7 +802,7 @@ function createMobileCamera() {
     hook.getWorldPosition(hookGlobalPosition);
 
     camera.position.set(hookGlobalPosition.x, hookGlobalPosition.y, hookGlobalPosition.z);
-    camera.lookAt(scene.position);
+    camera.lookAt(hookGlobalPosition.x, 0, hookGlobalPosition.z);
 
     mobileCameraEnabled = true;
 }
