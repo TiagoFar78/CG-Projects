@@ -132,7 +132,7 @@ function createScene() {
     'use strict';
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0xe6ffe6);
 
     scene.add(new THREE.AxesHelper(10));
 
@@ -202,7 +202,7 @@ function createTrolleyGroup(parent, x, y, z) {
 }
 
 function createHook(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x0059b3, wireframe: true });
     materials[materials.length] = material;
 
     var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
@@ -241,7 +241,7 @@ function createHook(parent, x, y, z) {
 }
 
 function createClaw(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
     materials[materials.length] = material;
 
     var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
@@ -267,7 +267,7 @@ function createClaw(parent, x, y, z) {
 }
 
 function createCable(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x004d99, wireframe: true });
     materials[materials.length] = material;
 
     var radius = 1;
@@ -288,7 +288,7 @@ function createCable(parent, x, y, z) {
 }
 
 function createTrolley(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x03366, wireframe: true });
     materials[materials.length] = material;
 
     var boxHeight = trolleyHeight * 4 / 5;
@@ -315,7 +315,7 @@ function createTrolley(parent, x, y, z) {
 }
 
 function createLance(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0xffa31a, wireframe: true });
     materials[materials.length] = material;
 
     var lance = new THREE.Mesh(new THREE.BoxGeometry(lanceLength, lanceHeight, lanceWidth), material);
@@ -325,7 +325,7 @@ function createLance(parent, x, y, z) {
 }
 
 function createCounterLance(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0xffa31a , wireframe: true });
     materials[materials.length] = material;
 
     var counterLance = new THREE.Mesh(new THREE.BoxGeometry(counterLanceLength, counterLanceHeight, counterLanceWidth), material);
@@ -335,7 +335,7 @@ function createCounterLance(parent, x, y, z) {
 }
 
 function createCounterWeight(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0xff8000 , wireframe: true });
     materials[materials.length] = material;
 
     var counterWeight = new THREE.Mesh(new THREE.BoxGeometry(counterWeightWidth, counterWeightHeight, counterWeightWidth), material);
@@ -345,7 +345,7 @@ function createCounterWeight(parent, x, y, z) {
 }
 
 function createLanceCarrier(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0xffa31a , wireframe: true });
     materials[materials.length] = material;
 
     var lanceCarrier = new THREE.Mesh(new THREE.BoxGeometry(lanceCarrierWidth, lanceCarrierHeight, lanceCarrierWidth), material);
@@ -355,7 +355,7 @@ function createLanceCarrier(parent, x, y, z) {
 }
 
 function createRod(parent, x, y, z, rotationZ) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x004d99, wireframe: true });
     materials[materials.length] = material;
 
     var size = (y - lanceHeight) / Math.cos(rotationZ);
@@ -369,7 +369,7 @@ function createRod(parent, x, y, z, rotationZ) {
 }
 
 function createCabin(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x003366, wireframe: true });
     materials[materials.length] = material;
 
     var cabine = new THREE.Mesh(new THREE.BoxGeometry(cabineLength, cabineHeight, cabineWidth), material);
@@ -388,7 +388,7 @@ function createInferiorCrane(parent, x, y, z) {
 }
 
 function createTower(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0xffa31a , wireframe: true });
     materials[materials.length] = material;
 
     var tower = new THREE.Mesh(new THREE.BoxGeometry(towerWidth, towerHeight, towerWidth), material);
@@ -398,7 +398,7 @@ function createTower(parent, x, y, z) {
 }
 
 function createBase(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x000000 , wireframe: true });
     materials[materials.length] = material;
 
     var base = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, baseHeigth, baseWidth), material);
@@ -408,8 +408,8 @@ function createBase(parent, x, y, z) {
 }
 
 function createContainer() {
-    var greenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true, side: THREE.DoubleSide });
-    var blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true, side: THREE.DoubleSide });
+    var greenMaterial = new THREE.MeshBasicMaterial({ color: 0xcc0000, wireframe: true, side: THREE.DoubleSide });
+    var blackMaterial = new THREE.MeshBasicMaterial({ color: 0x660000, wireframe: true, side: THREE.DoubleSide });
     var materialTransparent = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide });
     materials[materials.length] = greenMaterial;
     materials[materials.length] = blackMaterial;
