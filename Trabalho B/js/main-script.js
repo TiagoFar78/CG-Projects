@@ -71,9 +71,9 @@ const towerZ = 0;
 const containerWidth = 60;
 const containerLength = 100;
 const containerHeight = 60;
-const containerX = 150;
+const containerX = 250;
 const containerY = containerHeight / 2;
-const containerZ = 150;
+const containerZ = 0;
 
 const cargoMaxWidth = 40;
 const cargoMinWidth = 15;
@@ -112,6 +112,12 @@ var cargoUpperZCorners = [];
 var keysPressed = {};
 
 var mobileCameraEnabled = false;
+var animationEnabled = false;
+
+var phase1, phase2, phase3 = false // TODO remove these?
+
+
+var delta;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -138,7 +144,6 @@ function createScene() {
 /* CREATE CAMERA(S) */
 //////////////////////
 function createCamera() {
-    // TODO dúvida: camera inicial = ??
     'use strict';
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.x = 300;
@@ -225,12 +230,8 @@ function createHook(parent, x, y, z) {
 
     hook.position.set(x, y - clawSize - baseHookHeight / 2, z);
 
-    // Create a bounding sphere for the hook
-    var hookGeometry = new THREE.SphereGeometry(clawDistanceFromCenter / 2);
-    var hookBoundingSphere = new THREE.Mesh(hookGeometry, material);
-    hookBoundingSphere.position.copy(hook.position); // Set the position of the bounding sphere to match the hook
-    hookBoundingSphere.visible = false; // Hide the bounding sphere
-    hook.add(hookBoundingSphere); // Add the bounding sphere to the hook
+    var hookBoundingSphereRadius = clawDistanceFromCenter / 2;
+    hook.hookBoundingSphereRadius = hookBoundingSphereRadius;
 
     parent.add(hook);
 }
@@ -442,13 +443,8 @@ function createCargo() {
     cargoUpperXCorners[index] = x + length / 2;
     cargoUpperZCorners[index] = z + width / 2;
 
-    // Create a bounding sphere for the cargo
-    var cargoBoundingSphereGeometry = new THREE.SphereGeometry(Math.max(length, width, height) / 2);
-    var cargoBoundingSphere = new THREE.Mesh(cargoBoundingSphereGeometry, material);
-    cargoBoundingSphere.position.copy(mesh.position);
-    cargoBoundingSphere.visible = false;
-    mesh.add(cargoBoundingSphere);
-
+    var cargoBoundingSphereRadius = Math.max(length, width, height) / 2;
+    mesh.cargoBoundingSphereRadius = cargoBoundingSphereRadius;
     cargos.push(mesh);
 
     scene.add(mesh);
@@ -547,22 +543,21 @@ function generateRandomNumber(max, min) {
 /* CHECK COLLISIONS */
 //////////////////////
 function checkCollisions() {
+    'use strict';
+
     var hookPosition = new THREE.Vector3();
     hook.getWorldPosition(hookPosition);
-
-    var hookBoundingSphereRadius = hook.children[5].geometry.parameters.radius;
+    
 
     for (var i = 0; i < cargos.length; i++) {
         var cargo = cargos[i];
         var cargoPosition = new THREE.Vector3();
         cargo.getWorldPosition(cargoPosition);
         var distance = hookPosition.distanceTo(cargoPosition);
-
-        var cargoBoundingSphereRadius = cargo.children[0].geometry.parameters.radius;
         
-        if (distance < hookBoundingSphereRadius + cargoBoundingSphereRadius) {
-            console.log("Collision detected between hook and cargo " + i);
-            handleCollisions();
+        if (distance < hook.hookBoundingSphereRadius + cargo.cargoBoundingSphereRadius) {
+            console.log("Collision detected between hook and cargo " + i); // TODO remove
+            handleCollisions(cargo);
         }
     }
 }
@@ -570,9 +565,21 @@ function checkCollisions() {
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
-function handleCollisions(){
+function handleCollisions(cargo){
     'use strict';
-    // TODO: animação
+
+    animationEnabled = true;
+    
+    // Attach the cargo to the hook by adding it as a child of the hook
+    hook.add(cargo);
+    cargo.position.set(0, -cargo.cargoBoundingSphereRadius, 0); // TODO change this to half??
+
+    // Store the cargo reference in a property of the hook for future reference
+    hook.grabbedCargo = cargo;
+
+    phase1 = true;
+
+    //animationEnabled = false;
 }
 
 ////////////
@@ -580,44 +587,72 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
+    delta = clock.getDelta();
+    if(!animationEnabled){
+        if (keysPressed[81] || keysPressed[113]) { // Q
+            rotateSuperiorCraneLeft(delta);
+        }
 
-    var delta = clock.getDelta();
+        if (keysPressed[65] || keysPressed[97]) { // A
+            rotateSuperiorCraneRight(delta);
+        }
+        
+        if (keysPressed[87] || keysPressed[119]) { // W
+            moveTrolleyLeft(delta);
+        }
+        
+        if (keysPressed[83] || keysPressed[115]) { // S
+            moveTrolleyRight(delta);
+        }
+        
+        if (keysPressed[69] || keysPressed[101]) { // E
+            moveHookDown(delta);
+        }
+        
+        if (keysPressed[68] || keysPressed[100]) { // D
+            moveHookUp(delta);
+        }
+        
+        if (keysPressed[82] || keysPressed[114]) { // R
+            closeClaw(delta);
+        }
+        
+        if (keysPressed[70] || keysPressed[102]) { // F
+            openClaw(delta);
+        }
+        checkCollisions();
+    }
+    else {
+        var hookGlobalPosition = new THREE.Vector3();
+        hook.getWorldPosition(hookGlobalPosition);
+        if(phase1 && hookGlobalPosition.y <= 220) {
+            //console.log("y1:" + hookGlobalPosition.y); // TODO remove
+            moveHookUp(delta);
+        }
+        else if(!(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
+            phase1 = false;
+            rotateSuperiorCraneLeft(delta); // TODO put an if statement to also use rotateRight?
+        }
+        else if(!(hookGlobalPosition.x >= 248 && hookGlobalPosition.x <= 250)) {
+            //console.log("x:" + hookGlobalPosition.x); // TODO remove
+            moveTrolleyRight(delta);
+        }
+        else if(hookGlobalPosition.y >= 5.5) { // TODO: mudar isto para limites locais??
+            //console.log("y2:" + hookGlobalPosition.y); // TODO remove
+            moveHookDown(delta);
+        }
+        else {
+            //console.log("else"); // TODO remove
 
-    if (keysPressed[81] || keysPressed[113]) { // Q
-        rotateSuperiorCraneLeft(delta);
-    }
+            hook.remove(hook.grabbedCargo);
+            hook.grabbedCargo = null; // Reset the reference to null
 
-    if (keysPressed[65] || keysPressed[97]) { // A
-        rotateSuperiorCraneRight(delta);
-    }
-    
-    if (keysPressed[87] || keysPressed[119]) { // W
-        moveTrolleyLeft(delta);
-    }
-    
-    if (keysPressed[83] || keysPressed[115]) { // S
-        moveTrolleyRight(delta);
-    }
-    
-    if (keysPressed[69] || keysPressed[101]) { // E
-        moveHookDown(delta);
-    }
-    
-    if (keysPressed[68] || keysPressed[100]) { // D
-        moveHookUp(delta);
-    }
-    
-    if (keysPressed[82] || keysPressed[114]) { // R
-        closeClaw(delta);
-    }
-    
-    if (keysPressed[70] || keysPressed[102]) { // F
-        openClaw(delta);
+            animationEnabled = false;
+        }        
     }
     if(mobileCameraEnabled){
         createMobileCamera();
     }
-    checkCollisions();
 }
 
 /////////////
@@ -801,6 +836,11 @@ function moveTrolleyRight(delta) {
     if((trolleyGroup.position.x + trolleyStep * delta) <= trolleyRightLimit) {
         trolleyGroup.position.x += trolleyStep * delta;
     }
+    /*
+    var hookGlobalPosition = new THREE.Vector3();
+    hook.getWorldPosition(hookGlobalPosition);
+    console.log(hookGlobalPosition.x); // TODO remove
+    */
 }
 
 function moveHookDown(delta) {
@@ -821,6 +861,7 @@ function moveHookUp(delta) {
         cables.position.y += cablesStep * delta;
         cables.scale.y -= cablesScale * delta;
     }
+    //console.log(hook.position.y); TODO remove
 }
 
 function closeClaw(delta) {
