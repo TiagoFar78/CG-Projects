@@ -100,7 +100,7 @@ const clawLowerLimit = 0;
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-var camera, scene, renderer, clock, materialBasic, materialTransparent;
+var camera, scene, renderer, clock, materials = [];
 
 var superiorCrane, trolleyGroup, hook, cables, claws = [], cargos = [];
 
@@ -193,8 +193,11 @@ function createTrolleyGroup(parent, x, y, z) {
 }
 
 function createHook(parent, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
-    var baseHook = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseHookHeight, clawDistanceFromCenter), materialBasic);
+    var baseHook = new THREE.Mesh(new THREE.BoxGeometry(clawDistanceFromCenter, baseHookHeight, clawDistanceFromCenter), material);
     baseHook.position.set(0, clawHeight * 2 + baseHookHeight / 2, 0);
 
     hook = new THREE.Object3D();
@@ -224,7 +227,7 @@ function createHook(parent, x, y, z) {
 
     // Create a bounding sphere for the hook
     var hookGeometry = new THREE.SphereGeometry(clawDistanceFromCenter / 2);
-    var hookBoundingSphere = new THREE.Mesh(hookGeometry, materialBasic);
+    var hookBoundingSphere = new THREE.Mesh(hookGeometry, material);
     hookBoundingSphere.position.copy(hook.position); // Set the position of the bounding sphere to match the hook
     hookBoundingSphere.visible = false; // Hide the bounding sphere
     hook.add(hookBoundingSphere); // Add the bounding sphere to the hook
@@ -233,14 +236,17 @@ function createHook(parent, x, y, z) {
 }
 
 function createClaw(parent, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var clawHeight = Math.sqrt(Math.pow(clawSize, 2) / 2);
     var angleAlignedWithFloor = Math.PI * 54.5 / 180;
 
-    var clawSuperior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), materialBasic);
+    var clawSuperior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
     clawSuperior.rotation.set(angleAlignedWithFloor, -Math.PI / 4, 0);
     clawSuperior.position.set(0, clawHeight / 2, 0);
 
-    var clawInferior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), materialBasic);
+    var clawInferior = new THREE.Mesh(new THREE.TetrahedronGeometry(clawSize), material);
     clawInferior.rotation.set(-angleAlignedWithFloor + Math.PI, -Math.PI / 4, 0);
     clawInferior.position.set(0, -clawHeight / 2, 0);
 
@@ -256,12 +262,15 @@ function createClaw(parent, x, y, z) {
 }
 
 function createCable(parent, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var radius = 1;
     var distanceFromCenter = 3;
 
-    var cable1 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), materialBasic);
+    var cable1 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), material);
     cable1.position.set(distanceFromCenter, 0, -distanceFromCenter);
-    var cable2 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), materialBasic);
+    var cable2 = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, cableInitialHeight, 16), material);
     cable2.position.set(-distanceFromCenter, 0, distanceFromCenter);
 
     cables = new THREE.Object3D();
@@ -274,17 +283,20 @@ function createCable(parent, x, y, z) {
 }
 
 function createTrolley(parent, x, y, z) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var boxHeight = trolleyHeight * 4 / 5;
     var wheelHeigth = trolleyHeight * 1 / 5;
 
-    var box = new THREE.Mesh(new THREE.BoxGeometry(trolleyWidth, boxHeight, trolleyWidth), materialBasic);
+    var box = new THREE.Mesh(new THREE.BoxGeometry(trolleyWidth, boxHeight, trolleyWidth), material);
     box.position.set(0, trolleyHeight / 2 - boxHeight / 2, 0);
 
-    var wheel1 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), materialBasic);
+    var wheel1 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), material);
     wheel1.rotation.set(Math.PI / 2, 0, 0);
     wheel1.position.set(-trolleyWidth / 2 + wheelHeigth / 2, -trolleyHeight / 2 + wheelHeigth / 2, 0);
 
-    var wheel2 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), materialBasic);
+    var wheel2 = new THREE.Mesh(new THREE.CylinderGeometry(wheelHeigth / 2, wheelHeigth / 2, trolleyWidth), material);
     wheel2.rotation.set(Math.PI / 2, 0, 0);
     wheel2.position.set(trolleyWidth / 2 - wheelHeigth / 2, -trolleyHeight / 2 + wheelHeigth / 2, 0);
     
@@ -298,38 +310,53 @@ function createTrolley(parent, x, y, z) {
 }
 
 function createLance(parent, x, y, z) {
-    var lance = new THREE.Mesh(new THREE.BoxGeometry(lanceLength, lanceHeight, lanceWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var lance = new THREE.Mesh(new THREE.BoxGeometry(lanceLength, lanceHeight, lanceWidth), material);
     lance.position.set(x, y, z);
 
     parent.add(lance);
 }
 
 function createCounterLance(parent, x, y, z) {
-    var counterLance = new THREE.Mesh(new THREE.BoxGeometry(counterLanceLength, counterLanceHeight, counterLanceWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var counterLance = new THREE.Mesh(new THREE.BoxGeometry(counterLanceLength, counterLanceHeight, counterLanceWidth), material);
     counterLance.position.set(x, y, z);
 
     parent.add(counterLance);
 }
 
 function createCounterWeight(parent, x, y, z) {
-    var counterWeight = new THREE.Mesh(new THREE.BoxGeometry(counterWeightWidth, counterWeightHeight, counterWeightWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var counterWeight = new THREE.Mesh(new THREE.BoxGeometry(counterWeightWidth, counterWeightHeight, counterWeightWidth), material);
     counterWeight.position.set(x, y, z);
 
     parent.add(counterWeight);
 }
 
 function createLanceCarrier(parent, x, y, z) {
-    var lanceCarrier = new THREE.Mesh(new THREE.BoxGeometry(lanceCarrierWidth, lanceCarrierHeight, lanceCarrierWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var lanceCarrier = new THREE.Mesh(new THREE.BoxGeometry(lanceCarrierWidth, lanceCarrierHeight, lanceCarrierWidth), material);
     lanceCarrier.position.set(x, y, z);
 
     parent.add(lanceCarrier);
 }
 
 function createRod(parent, x, y, z, rotationZ) {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var size = (y - lanceHeight) / Math.cos(rotationZ);
     var sideLength = Math.tan(rotationZ) * (y - lanceHeight);
     
-    var rod = new THREE.Mesh(new THREE.CylinderGeometry(rodRadius, rodRadius, size, 8), materialBasic);
+    var rod = new THREE.Mesh(new THREE.CylinderGeometry(rodRadius, rodRadius, size, 8), material);
     rod.rotation.set(0, 0, rotationZ);
     rod.position.set(x + sideLength / 2, y - (y - lanceHeight) / 2, z);
 
@@ -337,7 +364,10 @@ function createRod(parent, x, y, z, rotationZ) {
 }
 
 function createCabin(parent, x, y, z) {
-    var cabine = new THREE.Mesh(new THREE.BoxGeometry(cabineLength, cabineHeight, cabineWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var cabine = new THREE.Mesh(new THREE.BoxGeometry(cabineLength, cabineHeight, cabineWidth), material);
     cabine.position.set(x, y, z);
 
     parent.add(cabine);
@@ -353,29 +383,44 @@ function createInferiorCrane(parent, x, y, z) {
 }
 
 function createTower(parent, x, y, z) {
-    var tower = new THREE.Mesh(new THREE.BoxGeometry(towerWidth, towerHeight, towerWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var tower = new THREE.Mesh(new THREE.BoxGeometry(towerWidth, towerHeight, towerWidth), material);
     tower.position.set(x, y, z);
 
     parent.add(tower);
 }
 
 function createBase(parent, x, y, z) {
-    var base = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, baseHeigth, baseWidth), materialBasic);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
+    var base = new THREE.Mesh(new THREE.BoxGeometry(baseWidth, baseHeigth, baseWidth), material);
     base.position.set(x, y, z);
 
     parent.add(base);
 }
 
 function createContainer() {
-    var materialBasics = [materialBasic, materialBasic, materialTransparent, materialBasic, materialBasic, materialBasic];
+    var greenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true, side: THREE.DoubleSide });
+    var blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true, side: THREE.DoubleSide });
+    var materialTransparent = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide });
+    materials[materials.length] = greenMaterial;
+    materials[materials.length] = blackMaterial;
 
-    var mesh = new THREE.Mesh(new THREE.BoxGeometry(containerLength, containerHeight, containerWidth), materialBasics);
+    var materialList = [greenMaterial, greenMaterial, materialTransparent, blackMaterial, greenMaterial, greenMaterial];
+
+    var mesh = new THREE.Mesh(new THREE.BoxGeometry(containerLength, containerHeight, containerWidth), materialList);
     mesh.position.set(containerX, containerY, containerZ);
     
     scene.add(mesh);
 }
 
 function createCargo() {
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
+
     var length = generateRandomNumber(cargoMaxLength, cargoMinLength);
     var width = generateRandomNumber(cargoMaxWidth, cargoMinWidth);
 
@@ -389,7 +434,7 @@ function createCargo() {
 
     var height = generateRandomNumber(cargoMaxHeight, cargoMinHeight);
 
-    var mesh = createRandomCargo(length, height, width, x, z, materialBasic);
+    var mesh = createRandomCargo(length, height, width, x, z, material);
 
     var index = cargoLowerXCorners.length;
     cargoLowerXCorners[index] = x - length / 2;
@@ -399,7 +444,7 @@ function createCargo() {
 
     // Create a bounding sphere for the cargo
     var cargoBoundingSphereGeometry = new THREE.SphereGeometry(Math.max(length, width, height) / 2);
-    var cargoBoundingSphere = new THREE.Mesh(cargoBoundingSphereGeometry, materialBasic);
+    var cargoBoundingSphere = new THREE.Mesh(cargoBoundingSphereGeometry, material);
     cargoBoundingSphere.position.copy(mesh.position);
     cargoBoundingSphere.visible = false;
     mesh.add(cargoBoundingSphere);
@@ -440,7 +485,7 @@ function isInContact(lowerXCorner1, lowerZCorner1, upperXCorner1, upperZCorner1,
     return isXOverlap && isZOverlap;
 }
 
-function createRandomCargo(length, height, width, x, z, materialBasic) {
+function createRandomCargo(length, height, width, x, z, material) {
     var randomValue = generateRandomNumber(cargoAmount, 0);
     var geometry;
     var y;
@@ -468,7 +513,7 @@ function createRandomCargo(length, height, width, x, z, materialBasic) {
             break;
     }
 
-    var mesh = new THREE.Mesh(geometry, materialBasic);
+    var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
     return mesh;
@@ -595,9 +640,8 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     clock = new THREE.Clock();
-    materialBasic = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    materialTransparent = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide });
-
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    materials[materials.length] = material;
 
     createScene();
     createCamera();
@@ -908,7 +952,9 @@ function onKeyDown(e) {
     case 55: //7
         var key7 = document.getElementById('key7');
         key7.classList.toggle('active', true);
-        materialBasic.wireframe = !materialBasic.wireframe;
+        for (var material of materials) {
+            material.wireframe = !material.wireframe;
+        }
         break;
   }
 
