@@ -97,6 +97,12 @@ const clawStep = Math.PI / 4;
 const clawUpperLimit = Math.PI / 3;
 const clawLowerLimit = 0;
 
+var width = window.innerWidth;
+var height = window.innerHeight;
+var near = 1;
+var far = 1000;
+var fov = 70;
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -114,7 +120,7 @@ var keysPressed = {};
 var mobileCameraEnabled = false;
 var animationEnabled = false;
 
-var phase1, phase2, phase3 = false // TODO remove these?
+var phase1 = false;
 
 
 var delta;
@@ -126,9 +132,7 @@ function createScene() {
     'use strict';
 
     scene = new THREE.Scene();
-
-    // Set background color to white
-    scene.background = new THREE.Color(0xffffff); // TODO escolher outra cor clara?
+    scene.background = new THREE.Color(0xffffff);
 
     scene.add(new THREE.AxesHelper(10));
 
@@ -145,7 +149,7 @@ function createScene() {
 //////////////////////
 function createCamera() {
     'use strict';
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    camera = new THREE.PerspectiveCamera(fov, width / height, near, far);
     camera.position.x = 300;
     camera.position.y = 500;
     camera.position.z = 300;
@@ -556,7 +560,6 @@ function checkCollisions() {
         var distance = hookPosition.distanceTo(cargoPosition);
         
         if (distance < hook.hookBoundingSphereRadius + cargo.cargoBoundingSphereRadius) {
-            console.log("Collision detected between hook and cargo " + i); // TODO remove
             handleCollisions(cargo);
         }
     }
@@ -569,17 +572,10 @@ function handleCollisions(cargo){
     'use strict';
 
     animationEnabled = true;
-    
-    // Attach the cargo to the hook by adding it as a child of the hook
     hook.add(cargo);
-    cargo.position.set(0, -cargo.cargoBoundingSphereRadius, 0); // TODO change this to half??
-
-    // Store the cargo reference in a property of the hook for future reference
+    cargo.position.set(0, -cargo.cargoBoundingSphereRadius, 0);
     hook.grabbedCargo = cargo;
-
     phase1 = true;
-
-    //animationEnabled = false;
 }
 
 ////////////
@@ -626,32 +622,27 @@ function update(){
         var hookGlobalPosition = new THREE.Vector3();
         hook.getWorldPosition(hookGlobalPosition);
         if(phase1 && hookGlobalPosition.y <= 220) {
-            //console.log("y1:" + hookGlobalPosition.y); // TODO remove
             moveHookUp(delta);
         }        
         else if(hookGlobalPosition.z >= 0 &&
             !(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
             phase1 = false;
-            rotateSuperiorCraneRight(delta); // TODO put an if statement to also use rotateRight?
+            rotateSuperiorCraneRight(delta);
         }
         else if(hookGlobalPosition.z < 0 &&
             !(hookGlobalPosition.z >= -2 && hookGlobalPosition.z <= 2 && hookGlobalPosition.x > 0)) {
             phase1 = false;
-            rotateSuperiorCraneLeft(delta); // TODO put an if statement to also use rotateRight?
+            rotateSuperiorCraneLeft(delta);
         }
         else if(!(hookGlobalPosition.x >= 248 && hookGlobalPosition.x <= 250)) {
-            //console.log("x:" + hookGlobalPosition.x); // TODO remove
             moveTrolleyRight(delta);
         }
-        else if(hookGlobalPosition.y >= 5.5) { // TODO: mudar isto para limites locais??
-            //console.log("y2:" + hookGlobalPosition.y); // TODO remove
+        else if(hookGlobalPosition.y >= 5.5) {
             moveHookDown(delta);
         }
         else {
-            //console.log("else"); // TODO remove
-
             hook.remove(hook.grabbedCargo);
-            hook.grabbedCargo = null; // Reset the reference to null
+            hook.grabbedCargo = null;
 
             animationEnabled = false;
         }        
@@ -677,7 +668,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({
         antialias: true
     });
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(width, height);
     document.body.appendChild(renderer.domElement);
 
     clock = new THREE.Clock();
@@ -719,16 +710,8 @@ function onResize() {
 function createFrontalCamera() {
     'use strict';
 
-    // Define the parameters for frontal camera
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-    var near = 1;
-    var far = 1000;
-
-    // Create frontal camera
     camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
-    // Set camera position and orientation
-    camera.position.set(0, 0, 200);
+    camera.position.set(0, 0, 300);
     camera.lookAt(scene.position);
 
     mobileCameraEnabled = false;
@@ -737,16 +720,8 @@ function createFrontalCamera() {
 function createLateralCamera() {
     'use strict';
 
-    // Define the parameters for lateral camera
-    var width = window.innerWidth / 2; // Half the window width
-    var height = window.innerHeight;
-    var near = 1;
-    var far = 1000;
-
-    // Create lateral camera
-    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
-    // Set camera position and orientation
-    camera.position.set(200, 0, 0);
+    camera = new THREE.OrthographicCamera(-width / 4, width / 4, height / 2, -height / 2, near, far);
+    camera.position.set(300, 0, 0);
     camera.lookAt(scene.position);
 
     mobileCameraEnabled = false;
@@ -755,15 +730,7 @@ function createLateralCamera() {
 function createTopCamera() {
     'use strict';
 
-    // Define the parameters for top camera
-    var width = window.innerWidth;
-    var height = window.innerHeight / 2; // Half the window height
-    var near = 1;
-    var far = 1000;
-
-    // Create top camera
-    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
-    // Set camera position and orientation
+    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 4, -height / 4, near, far);
     camera.position.set(0, 400, 0);
     camera.lookAt(scene.position);
 
@@ -772,12 +739,8 @@ function createTopCamera() {
 
 function createFixedOrthogonalCamera() {
     'use strict';
-    var near = 1;
-    var far = 1000;
 
-    // Create orthogonal camera
-    camera = new THREE.OrthographicCamera(-window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, near, far);
-    // Set camera position and orientation
+    camera = new THREE.OrthographicCamera(-width / 2, width / 2, height / 2, -height / 2, near, far);
     camera.position.set(300, 500, 300);
     camera.lookAt(scene.position);
 
@@ -787,12 +750,8 @@ function createFixedOrthogonalCamera() {
 
 function createFixedPerspectiveCamera() {
     'use strict';
-    var near = 1;
-    var far = 1000;
 
-    // Create perspective camera
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, near, far);
-    // Set camera position and orientation
+    camera = new THREE.PerspectiveCamera(fov, width / height, near, far);
     camera.position.set(300, 500, 300);
     camera.lookAt(scene.position);
 
@@ -802,7 +761,7 @@ function createFixedPerspectiveCamera() {
 function createMobileCamera() {
     'use strict';
 
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    camera = new THREE.PerspectiveCamera(fov, width / height, near, far);
 
     var hookGlobalPosition = new THREE.Vector3();
     hook.getWorldPosition(hookGlobalPosition);
@@ -842,11 +801,6 @@ function moveTrolleyRight(delta) {
     if((trolleyGroup.position.x + trolleyStep * delta) <= trolleyRightLimit) {
         trolleyGroup.position.x += trolleyStep * delta;
     }
-    /*
-    var hookGlobalPosition = new THREE.Vector3();
-    hook.getWorldPosition(hookGlobalPosition);
-    console.log(hookGlobalPosition.x); // TODO remove
-    */
 }
 
 function moveHookDown(delta) {
@@ -867,7 +821,6 @@ function moveHookUp(delta) {
         cables.position.y += cablesStep * delta;
         cables.scale.y -= cablesScale * delta;
     }
-    //console.log(hook.position.y); TODO remove
 }
 
 function closeClaw(delta) {
@@ -920,88 +873,89 @@ function openClaw(delta) {
 
 function onKeyDown(e) {
     'use strict';
+    if(!animationEnabled) {
+        keysPressed[e.keyCode] = true;
 
-    keysPressed[e.keyCode] = true;
-
-    switch (e.keyCode) {
-    case 81: //Q
-    case 113: //q
-        var keyQ = document.getElementById('keyQ');
-        keyQ.classList.toggle('active', true);
-        break;
-    case 65: //A
-    case 97: //a
-        var keyA = document.getElementById('keyA');
-        keyA.classList.toggle('active', true);
-        break;
-    case 87: //W
-    case 119: //w
-        var keyW = document.getElementById('keyW');
-        keyW.classList.toggle('active', true);
-        break;
-    case 83: //S
-    case 115: //s
-        var keyS = document.getElementById('keyS');
-        keyS.classList.toggle('active', true);
-        break;
-    case 69: //E
-    case 101: //e
-        var keyE = document.getElementById('keyE');
-        keyE.classList.toggle('active', true);
-        break;
-    case 68: //D
-    case 100: //d
-        var keyD = document.getElementById('keyD');
-        keyD.classList.toggle('active', true);
-        break;
-    case 82: //R
-    case 114: //r
-        var keyR = document.getElementById('keyR');
-        keyR.classList.toggle('active', true);
-        break;
-    case 70: //F
-    case 102: //f
-        var keyF = document.getElementById('keyF');
-        keyF.classList.toggle('active', true);
-        break;
-    case 49: //1
-        var key1 = document.getElementById('key1');
-        key1.classList.toggle('active', true);
-        createFrontalCamera();
-        break;
-    case 50: //2
-        var key2 = document.getElementById('key2');
-        key2.classList.toggle('active', true);
-        createLateralCamera();
-        break;
-    case 51: //3
-        var key3 = document.getElementById('key3');
-        key3.classList.toggle('active', true);
-        createTopCamera();
-        break;
-    case 52: //4
-        var key4 = document.getElementById('key4');
-        key4.classList.toggle('active', true);
-        createFixedOrthogonalCamera();
-        break;
-    case 53: //5
-        var key5 = document.getElementById('key5');
-        key5.classList.toggle('active', true);
-        createFixedPerspectiveCamera();
-        break;
-    case 54: //6
-        var key6 = document.getElementById('key6');
-        key6.classList.toggle('active', true);
-        createMobileCamera();
-        break;
-    case 55: //7
-        var key7 = document.getElementById('key7');
-        key7.classList.toggle('active', true);
-        for (var material of materials) {
-            material.wireframe = !material.wireframe;
+        switch (e.keyCode) {
+        case 81: //Q
+        case 113: //q
+            var keyQ = document.getElementById('keyQ');
+            keyQ.classList.toggle('active', true);
+            break;
+        case 65: //A
+        case 97: //a
+            var keyA = document.getElementById('keyA');
+            keyA.classList.toggle('active', true);
+            break;
+        case 87: //W
+        case 119: //w
+            var keyW = document.getElementById('keyW');
+            keyW.classList.toggle('active', true);
+            break;
+        case 83: //S
+        case 115: //s
+            var keyS = document.getElementById('keyS');
+            keyS.classList.toggle('active', true);
+            break;
+        case 69: //E
+        case 101: //e
+            var keyE = document.getElementById('keyE');
+            keyE.classList.toggle('active', true);
+            break;
+        case 68: //D
+        case 100: //d
+            var keyD = document.getElementById('keyD');
+            keyD.classList.toggle('active', true);
+            break;
+        case 82: //R
+        case 114: //r
+            var keyR = document.getElementById('keyR');
+            keyR.classList.toggle('active', true);
+            break;
+        case 70: //F
+        case 102: //f
+            var keyF = document.getElementById('keyF');
+            keyF.classList.toggle('active', true);
+            break;
+        case 49: //1
+            var key1 = document.getElementById('key1');
+            key1.classList.toggle('active', true);
+            createFrontalCamera();
+            break;
+        case 50: //2
+            var key2 = document.getElementById('key2');
+            key2.classList.toggle('active', true);
+            createLateralCamera();
+            break;
+        case 51: //3
+            var key3 = document.getElementById('key3');
+            key3.classList.toggle('active', true);
+            createTopCamera();
+            break;
+        case 52: //4
+            var key4 = document.getElementById('key4');
+            key4.classList.toggle('active', true);
+            createFixedOrthogonalCamera();
+            break;
+        case 53: //5
+            var key5 = document.getElementById('key5');
+            key5.classList.toggle('active', true);
+            createFixedPerspectiveCamera();
+            break;
+        case 54: //6
+            var key6 = document.getElementById('key6');
+            key6.classList.toggle('active', true);
+            createMobileCamera();
+            break;
+        case 55: //7
+            var key7 = document.getElementById('key7');
+            key7.classList.toggle('active', true);
+            for (var material of materials) {
+                material.wireframe = !material.wireframe;
+            }
+            break;
         }
-        break;
-  }
+    }
 
 }
 
