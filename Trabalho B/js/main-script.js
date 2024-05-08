@@ -640,8 +640,6 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     clock = new THREE.Clock();
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
-    materials[materials.length] = material;
 
     createScene();
     createCamera();
