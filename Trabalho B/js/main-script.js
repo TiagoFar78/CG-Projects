@@ -549,18 +549,19 @@ function generateRandomNumber(max, min) {
 function checkCollisions() {
     'use strict';
 
-    var hookPosition = new THREE.Vector3();
-    hook.getWorldPosition(hookPosition);
+    if(!animationEnabled) {
+        var hookPosition = new THREE.Vector3();
+        hook.getWorldPosition(hookPosition);
     
-
-    for (var i = 0; i < cargos.length; i++) {
-        var cargo = cargos[i];
-        var cargoPosition = new THREE.Vector3();
-        cargo.getWorldPosition(cargoPosition);
-        var distance = hookPosition.distanceTo(cargoPosition);
-        
-        if (distance < hook.hookBoundingSphereRadius + cargo.cargoBoundingSphereRadius) {
-            handleCollisions(cargo);
+        for (var i = 0; i < cargos.length; i++) {
+            var cargo = cargos[i];
+            var cargoPosition = new THREE.Vector3();
+            cargo.getWorldPosition(cargoPosition);
+            var distance = hookPosition.distanceTo(cargoPosition);
+            
+            if (distance < hook.hookBoundingSphereRadius + cargo.cargoBoundingSphereRadius) {
+                handleCollisions(cargo);
+            }
         }
     }
 }
@@ -616,7 +617,6 @@ function update(){
         if (keysPressed[70] || keysPressed[102]) { // F
             openClaw(delta);
         }
-        checkCollisions();
     }
     else {
         var hookGlobalPosition = new THREE.Vector3();
@@ -637,13 +637,12 @@ function update(){
         else if(!(hookGlobalPosition.x >= 248 && hookGlobalPosition.x <= 250)) {
             moveTrolleyRight(delta);
         }
-        else if(hookGlobalPosition.y >= 5.5) {
+        else if(hookGlobalPosition.y >= containerHeight / 2) {
             moveHookDown(delta);
         }
         else {
             hook.remove(hook.grabbedCargo);
             hook.grabbedCargo = null;
-
             animationEnabled = false;
         }        
     }
@@ -688,10 +687,9 @@ function init() {
 function animate() {
     'use strict';
 
+    checkCollisions();
     update();
-
     render();
-
     requestAnimationFrame(animate);
 }
 
