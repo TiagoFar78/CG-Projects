@@ -6,6 +6,8 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 const radialSegments = 16;
 
+const wireframe = false;
+
 const cylinderHeight = 100;
 const cylinderRadius = 10;
 const ringRadius = 30;
@@ -69,18 +71,18 @@ function createCarousel() {
     var carousel = new THREE.Object3D();
 
     createCentralCylinder(carousel, 0, 0, 0);
-    createRing(carousel, 0, 0, 0, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight);
-    createRing(carousel, 0, 0, 0, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight);
-    createRing(carousel, 0, 0, 0, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight);
+    createRing(carousel, 0, 0, 0, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xff8000);
+    createRing(carousel, 0, 0, 0, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
+    createRing(carousel, 0, 0, 0, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
 
     scene.add(carousel);
 }
 
 function createCentralCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+    var material = new THREE.MeshBasicMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide });
 
     var path = new VerticalLine();
-    var tubeGeometry = new THREE.TubeGeometry(path, 1, cylinderRadius, radialSegments, false);
+    var tubeGeometry = new THREE.TubeGeometry(path, 1, cylinderRadius, radialSegments);
     var mesh = new THREE.Mesh(tubeGeometry, material);
     mesh.position.set(x, y, z);
 
@@ -95,8 +97,8 @@ class VerticalLine extends THREE.Curve {
 
 }
 
-function createRing(parent, x, y, z, outerRadius, innerRadius, height) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
+    var material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe });
 
     var outerCircle = new THREE.Shape();
     outerCircle.absarc(x, z, outerRadius);
