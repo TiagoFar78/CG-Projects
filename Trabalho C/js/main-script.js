@@ -6,9 +6,9 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 const radialSegments = 16;
 
-const cylinderHeight = 50;
+const cylinderHeight = 100;
 const cylinderRadius = 10;
-const ringRadius = 20;
+const ringRadius = 30;
 const innerRingHeight = cylinderHeight * 3 / 4;
 const innerRingInnerRadius = cylinderRadius;
 const innerRingOuterRadius = innerRingInnerRadius + ringRadius;
@@ -52,7 +52,7 @@ function createCamera() {
     var fov = 70;
     camera = new THREE.PerspectiveCamera(fov, width / height, near, far);
     camera.position.x = 100;
-    camera.position.y = 100;
+    camera.position.y = 150;
     camera.position.z = 100;
     camera.lookAt(scene.position);
 }
@@ -68,8 +68,10 @@ function createCamera() {
 function createCarousel() {
     var carousel = new THREE.Object3D();
 
-    //createCentralCylinder(carousel, 0, 0, 0);
-    createInnerRing(carousel, 0, 0, 0);
+    createCentralCylinder(carousel, 0, 0, 0);
+    createRing(carousel, 0, 0, 0, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight);
+    createRing(carousel, 0, 0, 0, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight);
+    createRing(carousel, 0, 0, 0, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight);
 
     scene.add(carousel);
 }
@@ -93,14 +95,20 @@ class VerticalLine extends THREE.Curve {
 
 }
 
-function createInnerRing(parent, x, y, z) {
+function createRing(parent, x, y, z, outerRadius, innerRadius, height) {
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
 
-    var ringGeometry = new THREE.RingGeometry(innerRingInnerRadius, innerRingOuterRadius, radialSegments);
-    //var ringWithHeightGeometry = new THREE.ExtrudeGeometry(ringGeometry, {depth: innerRingHeight, bevelEnabled: false});
+    var outerCircle = new THREE.Shape();
+    outerCircle.absarc(x, z, outerRadius);
 
-    var mesh = new THREE.Mesh(ringGeometry, material);
-    mesh.rotation.set(Math.PI / 2, 0, 0);
+    var innerCircle = new THREE.Shape();
+    innerCircle.absarc(x, z, innerRadius);
+
+    outerCircle.holes.push(innerCircle);
+
+    var geometry = new THREE.ExtrudeGeometry(outerCircle, { depth: height });
+    var mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.set(-Math.PI / 2, 0, 0);
     mesh.position.set(x, y, z);
 
     parent.add(mesh);
