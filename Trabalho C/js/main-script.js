@@ -1,23 +1,26 @@
 import * as THREE from 'three';
+import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { VRButton } from 'three/addons/webxr/VRButton.js';
 import * as Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 const radialSegments = 16;
+const parametricSurfacesSegments = 12;
 
 const wireframe = false;
 
 const cylinderHeight = 100;
 const cylinderRadius = 10;
 const ringRadius = 30;
-const innerRingHeight = cylinderHeight * 3 / 4;
+const heightDiff = cylinderHeight / 4;
+const innerRingHeight = cylinderHeight - heightDiff;
 const innerRingInnerRadius = cylinderRadius;
 const innerRingOuterRadius = innerRingInnerRadius + ringRadius;
-const middleRingHeight = cylinderHeight * 2 / 4;
+const middleRingHeight = innerRingHeight - heightDiff;
 const middleRingInnerRadius = innerRingOuterRadius;
 const middleRingOuterRadius = middleRingInnerRadius + ringRadius;
-const outerRingHeight = cylinderHeight * 1 / 4;
+const outerRingHeight = middleRingHeight - heightDiff;
 const outerRingInnerRadius = middleRingOuterRadius;
 const outerRingOuterRadius = outerRingInnerRadius + ringRadius;
 
@@ -69,11 +72,13 @@ function createCamera() {
 
 function createCarousel() {
     var carousel = new THREE.Object3D();
-
+    /*
     createCentralCylinder(carousel, 0, 0, 0);
     createRing(carousel, 0, 0, 0, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xff8000);
     createRing(carousel, 0, 0, 0, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
     createRing(carousel, 0, 0, 0, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
+*/
+    createParametricFishFormatSurface(carousel);
 
     scene.add(carousel);
 }
@@ -114,6 +119,239 @@ function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
     mesh.position.set(x, y, z);
 
     parent.add(mesh);
+}
+
+function createParametricCylinder(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var x = radius * Math.cos(theta);
+        var z = radius * Math.sin(theta);
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricDeformedCylinder(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var deformation = radius / 2;
+
+        var x = radius * Math.cos(theta) + noise2D(u, u) * deformation;
+        var z = radius * Math.sin(theta) + noise2D(u, u) * deformation;
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricDeformedTiltedCylinder(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+
+        var distanceBetweenBases = radius;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var lowerCenterFromOrigin = -distanceBetweenBases / 2;
+        var upperCenterFromOrigin = distanceBetweenBases / 2 - -distanceBetweenBases / 2;
+        var x = lowerCenterFromOrigin + upperCenterFromOrigin * v;
+        var z = lowerCenterFromOrigin + upperCenterFromOrigin * v;
+
+        var deformation = radius / 2;
+
+        x += radius * Math.cos(theta) + noise2D(u, u) * deformation;
+        z += radius * Math.sin(theta) + noise2D(u, u) * deformation;
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricCone(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var x = radius * Math.cos(theta) * (1 - v);
+        var z = radius * Math.sin(theta) * (1 - v);
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricIncompleteCone(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var x = radius * Math.cos(theta) * (1 - v * 0.5);
+        var z = radius * Math.sin(theta) * (1 - v * 0.5);
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricDeformedTiltedCone(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var distanceBetweenBases = radius * 2 / 3;
+        var lowerCenterFromOrigin = -distanceBetweenBases / 2;
+        var upperCenterFromOrigin = distanceBetweenBases / 2 - -distanceBetweenBases / 2;
+        var x = lowerCenterFromOrigin + upperCenterFromOrigin * v;
+        var z = lowerCenterFromOrigin + upperCenterFromOrigin * v;
+
+        var deformation = radius / 2;
+
+        x += (radius * Math.cos(theta) + noise2D(u, u) * deformation) * (1 - v);
+        z += (radius * Math.sin(theta) + noise2D(u, u) * deformation) * (1 - v);
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricTiltedBaseCylinder(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var radius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var x = radius * Math.cos(theta);
+        var z = radius * Math.sin(theta);
+
+        if (y > height / 2) {
+            var tiltAmount = 0.8;
+            var tiltCenter = 0.7;
+            var tiltDisplacement = height * tiltAmount * (v - tiltCenter) * (v - tiltCenter);
+
+            var tilt = tiltDisplacement * (theta < Math.PI ? 1 : -1);
+            y += tilt;
+        }
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricFishFormatSurface(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var length = ringRadius * 3 / 4;
+        var width = ringRadius * 3 / 4;
+        var height = heightDiff * 3 / 4;
+
+        var x = u * length;
+        var y = Math.abs(u - v) * height;
+        var z = v * width;
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = 1;
+    var segmentsV = 1;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function noise2D(x, y) {
+    var n = x + y * 57;
+    n = (n << 13) ^ n;
+    return (1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
 }
 
 //////////////////////
