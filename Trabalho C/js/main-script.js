@@ -78,7 +78,7 @@ function createCarousel() {
     createRing(carousel, 0, 0, 0, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
     createRing(carousel, 0, 0, 0, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
 */
-    createParametricFishFormatSurface(carousel);
+    createParametricThinCylinder(carousel);
 
     scene.add(carousel);
 }
@@ -329,17 +329,60 @@ function createParametricFishFormatSurface(parent) {
 
     function parametricFunction(u, v, target) {
         var length = ringRadius * 3 / 4;
-        var width = ringRadius * 3 / 4;
+        var width = ringRadius * 1 / 4;
         var height = heightDiff * 3 / 4;
 
-        var x = u * length;
-        var y = Math.abs(u - v) * height;
-        var z = v * width;
+        var line1_start = [0, 0, 0];
+        var line1_end = [length, height * 3 / 4, 0];
+        var line2_start = [0, height, width];
+        var line2_end = [length, height * 2 / 4, width];
+        
+        var point1 = [
+            line1_start[0] + u * (line1_end[0] - line1_start[0]),
+            line1_start[1] + u * (line1_end[1] - line1_start[1]),
+            line1_start[2] + u * (line1_end[2] - line1_start[2])
+        ];
+        var point2 = [
+            line2_start[0] + u * (line2_end[0] - line2_start[0]),
+            line2_start[1] + u * (line2_end[1] - line2_start[1]),
+            line2_start[2] + u * (line2_end[2] - line2_start[2])
+        ];
+        
+        var x = point1[0] + v * (point2[0] - point1[0]);
+        var y = point1[1] + v * (point2[1] - point1[1]);
+        var z = point1[2] + v * (point2[2] - point1[2]);
         
         return target.set(x, y, z);
     }
     
-    var segmentsU = 1;
+    var segmentsU = 10;
+    var segmentsV = 10;
+    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
+
+    var mesh = new THREE.Mesh(geometry, material);
+
+    parent.add(mesh);
+}
+
+function createParametricThinCylinder(parent) {
+    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+
+    function parametricFunction(u, v, target) {
+        var baseRadius = ringRadius * 1 / 4;
+        var height = heightDiff * 3 / 4;
+        
+        var theta = u * Math.PI * 2;
+        var y = v * height;
+        
+        var radius = baseRadius * Math.cos(Math.PI * v);
+        
+        var x = radius * Math.cos(theta);
+        var z = radius * Math.sin(theta);
+        
+        return target.set(x, y, z);
+    }
+    
+    var segmentsU = parametricSurfacesSegments;
     var segmentsV = 1;
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
