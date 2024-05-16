@@ -224,7 +224,7 @@ function createParametricCylinder(parent, x, y, z) {
     var index = surfaces.length;
     surfaces[index] = mesh;
     rotationAxis[index] = 0;
-    rotationSpeed[index] = 0.01;
+    rotationSpeed[index] = 0.1;
 
     var spotLight = new THREE.SpotLight(0xfffffff, 1);
     spotLight.position.set(x, y, z);
@@ -557,8 +557,6 @@ function init() {
     createScene();
     createCamera();
 
-    render();
-
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 }
@@ -570,17 +568,17 @@ function animate() {
     'use strict';
 
     update();
-    //rotateParametricSurfaces();
+    rotateParametricSurfaces();
     rotateCarousel();
     render();
     requestAnimationFrame(animate);
 }
 
 function rotateCarousel() {
-    var carouselRotationSpeed = 0.01;
+    var carouselRotationSpeed = 0.05;
 
     carousel.userData.step += carouselRotationSpeed * delta;
-    carousel.rotation.y = Math.sin(Math.PI * carousel.userData.step);
+    carousel.rotation.y = Math.PI * carousel.userData.step;
 }
 
 function rotateParametricSurfaces() {
@@ -590,11 +588,14 @@ function rotateParametricSurfaces() {
         var axisCode = rotationAxis[i];
         switch (axisCode) {
             case 0:
-                surfaces[i].rotation.x += surfaces[i].userData.step;
+                surfaces[i].rotation.x = Math.PI * surfaces[i].userData.step;
+                break;
             case 1:
-                surfaces[i].rotation.y += Math.sin(surfaces[i].userData.step);
+                surfaces[i].rotation.y = Math.PI * surfaces[i].userData.step;
+                break;
             case 2:
-                surfaces[i].rotation.z += Math.sin(surfaces[i].userData.step);
+                surfaces[i].rotation.z = Math.PI * surfaces[i].userData.step;
+                break;
         }
     }
 }
