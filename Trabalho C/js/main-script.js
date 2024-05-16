@@ -29,7 +29,7 @@ const surfacesMaxHeight = heightDiff * 2 / 4;
 
 // [ ID, axisCode, rotationSpeed ]
 const layer1Surfaces = [
-    [1, 1, 0.1],
+    [1, 0, 0.1],
     [2, 0, 0.3],
     [3, 1, 0.2],
     [4, 2, 0.3],
@@ -39,23 +39,23 @@ const layer1Surfaces = [
     [8, 2, 0.5]
 ];
 const layer2Surfaces = [
-    [6, 1, 0.1],
+    [6, 0, 0.1],
     [8, 1, 0.1],
     [2, 1, 0.3],
-    [1, 0, 0.5],
+    [1, 2, 0.5],
     [4, 0, 0.4],
-    [3, 1, 0.2],
+    [3, 0, 0.2],
     [7, 0, 0.2],
     [5, 1, 0.5]
 ];
 const layer3Surfaces = [
-    [8, 2, 0.1],
-    [3, 1, 0.5],
+    [8, 0, 0.1],
+    [3, 2, 0.5],
     [7, 2, 0.2],
-    [4, 0, 0.4],
-    [2, 0, 0.3],
-    [5, 0, 0.2],
-    [6, 1, 0.1],
+    [4, 1, 0.4],
+    [2, 2, 0.3],
+    [5, 2, 0.2],
+    [6, 2, 0.1],
     [1, 1, 0.2]
 ];
 
@@ -232,12 +232,12 @@ function createParametricSurface(parent, x, y, z, surfaceId) {
 function createParametricCylinder(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide });
 
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+
     function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var x = radius * Math.cos(theta);
         var z = radius * Math.sin(theta);
@@ -250,7 +250,7 @@ function createParametricCylinder(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -269,12 +269,12 @@ function createParametricCylinder(parent, x, y, z) {
 function createParametricDeformedCylinder(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
-    function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+
+    function parametricFunction(u, v, target) {    
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var deformation = radius / 2;
 
@@ -289,7 +289,7 @@ function createParametricDeformedCylinder(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -301,14 +301,14 @@ function createParametricDeformedCylinder(parent, x, y, z) {
 function createParametricDeformedTiltedCylinder(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
-    function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
 
+    function parametricFunction(u, v, target) {
         var distanceBetweenBases = radius;
         
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var lowerCenterFromOrigin = -distanceBetweenBases / 2;
         var upperCenterFromOrigin = distanceBetweenBases / 2 - -distanceBetweenBases / 2;
@@ -328,7 +328,7 @@ function createParametricDeformedTiltedCylinder(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -340,12 +340,12 @@ function createParametricDeformedTiltedCylinder(parent, x, y, z) {
 function createParametricCone(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+    
     function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var x = radius * Math.cos(theta) * (1 - v);
         var z = radius * Math.sin(theta) * (1 - v);
@@ -358,7 +358,7 @@ function createParametricCone(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -370,12 +370,12 @@ function createParametricCone(parent, x, y, z) {
 function createParametricIncompleteCone(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+    
     function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var x = radius * Math.cos(theta) * (1 - v * 0.5);
         var z = radius * Math.sin(theta) * (1 - v * 0.5);
@@ -388,7 +388,7 @@ function createParametricIncompleteCone(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -400,23 +400,23 @@ function createParametricIncompleteCone(parent, x, y, z) {
 function createParametricDeformedTiltedCone(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
+    var radius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+    
     function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var distanceBetweenBases = radius * 2 / 3;
         var lowerCenterFromOrigin = -distanceBetweenBases / 2;
         var upperCenterFromOrigin = distanceBetweenBases / 2 - -distanceBetweenBases / 2;
-        var x = lowerCenterFromOrigin + upperCenterFromOrigin * v;
-        var z = lowerCenterFromOrigin + upperCenterFromOrigin * v;
+        var x = lowerCenterFromOrigin + upperCenterFromOrigin * (v - 0.5);
+        var z = lowerCenterFromOrigin + upperCenterFromOrigin * (v - 0.5);
 
         var deformation = radius / 2;
 
-        x += (radius * Math.cos(theta) + noise2D(u, u) * deformation) * (1 - v);
-        z += (radius * Math.sin(theta) + noise2D(u, u) * deformation) * (1 - v);
+        x += (radius * Math.cos(theta) + noise2D(u, u) * deformation) * (1 - v + 0.5);
+        z += (radius * Math.sin(theta) + noise2D(u, u) * deformation) * (1 - v + 0.5);
         
         return target.set(x, y, z);
     }
@@ -426,7 +426,7 @@ function createParametricDeformedTiltedCone(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -477,11 +477,11 @@ function createParametricTiltedBaseCylinder(parent, x, y, z) {
 function createParametricFishFormatSurface(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
-    function parametricFunction(u, v, target) {
-        var length = surfacesMaxLength;
-        var width = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
+    var length = surfacesMaxLength;
+    var width = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
 
+    function parametricFunction(u, v, target) {
         var line1_start = [0, 0, 0];
         var line1_end = [length, height * 3 / 4, 0];
         var line2_start = [0, height, width];
@@ -498,9 +498,9 @@ function createParametricFishFormatSurface(parent, x, y, z) {
             line2_start[2] + u * (line2_end[2] - line2_start[2])
         ];
         
-        var x = point1[0] + v * (point2[0] - point1[0]);
-        var y = point1[1] + v * (point2[1] - point1[1]);
-        var z = point1[2] + v * (point2[2] - point1[2]);
+        var x = point1[0] + (v - 0.5) * (point2[0] - point1[0]);
+        var y = point1[1] + (v - 0.5) * (point2[1] - point1[1]);
+        var z = point1[2] + (v - 0.5) * (point2[2] - point1[2]);
         
         return target.set(x, y, z);
     }
@@ -510,7 +510,7 @@ function createParametricFishFormatSurface(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
@@ -522,12 +522,12 @@ function createParametricFishFormatSurface(parent, x, y, z) {
 function createParametricThinCylinder(parent, x, y, z) {
     var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
+    var baseRadius = surfacesMaxLength / 2;
+    var height = surfacesMaxHeight;
+    
     function parametricFunction(u, v, target) {
-        var baseRadius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
         var theta = u * Math.PI * 2;
-        var y = v * height;
+        var y = (v - 0.5) * height;
         
         var radius = baseRadius * Math.cos(Math.PI * v);
         
@@ -542,7 +542,7 @@ function createParametricThinCylinder(parent, x, y, z) {
     var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
 
     var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y + height / 2, z);
 
     var index = surfaces.length;
     mesh.userData = { step: 0, index: index };
