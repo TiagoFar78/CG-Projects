@@ -699,20 +699,11 @@ function onResize() {
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
-const angleStep = Math.PI / 180; // Adjust as needed
-const angle1Range = { min: -Math.PI / 4, max: Math.PI / 4 }; // Example range
 function onKeyDown(e) {
     'use strict';
     keysPressed[e.keyCode] = true;
 
     switch (e.keyCode) {
-    case 81: //Q
-    case 113: //q
-        if ((scene.rotation.y + angleStep) != angle1Range.max) {
-            const rotationMatrix = new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0, 1, 0), angleStep);
-            scene.applyMatrix4(rotationMatrix);
-        }
-        break;
     case 68: //D
     case 110: //d
         directionalLightOn = !directionalLightOn;
