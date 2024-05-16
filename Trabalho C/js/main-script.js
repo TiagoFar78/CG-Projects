@@ -32,6 +32,14 @@ const surfacesMaxHeight = heightDiff * 2 / 4;
 //////////////////////
 var camera, scene, renderer;
 
+var carousel, layer1, layer2, layer3;
+
+var surfaces = [], rotationAxis = [], rotationSpeed = [];
+
+var keysPressed = {};
+
+var clock, delta;
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -74,12 +82,21 @@ function createCamera() {
 ////////////////////////
 
 function createCarousel() {
-    var carousel = new THREE.Object3D();
+    carousel = new THREE.Object3D();
+    carousel.userData = { step: 0 };
+
+    layer1 = new THREE.Object3D();
+    layer2 = new THREE.Object3D();
+    layer3 = new THREE.Object3D();
     
     createCentralCylinder(carousel, 0, 0, 0);
-    createCarouselLayer(carousel, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xff8000);
-    createCarouselLayer(carousel, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
-    createCarouselLayer(carousel, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
+    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xff8000);
+    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
+    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
+
+    carousel.add(layer1);
+    carousel.add(layer2);
+    carousel.add(layer3);
 
     scene.add(carousel);
 }
@@ -104,16 +121,12 @@ class VerticalLine extends THREE.Curve {
 }
 
 function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeight, ringColor) {
-    var layer = new THREE.Object3D();
-
-    createRing(layer, 0, 0, 0, ringOuterRadius, ringInnerRadius, ringHeight, ringColor);
+    createRing(parent, 0, 0, 0, ringOuterRadius, ringInnerRadius, ringHeight, ringColor);
 
     var distanceFromOrigin = (ringOuterRadius + ringInnerRadius) / 2;
     for (var i = 0; i < 2 * Math.PI; i += Math.PI / 4) {
-        createRandomParametricSurface(layer, distanceFromOrigin * Math.sin(i), ringHeight, distanceFromOrigin * Math.cos(i));
+        createRandomParametricSurface(parent, distanceFromOrigin * Math.sin(i), ringHeight, distanceFromOrigin * Math.cos(i));
     }
-
-    parent.add(layer);
 }
 
 function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
@@ -138,7 +151,7 @@ function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
 function createRandomParametricSurface(parent, x, y, z) {
     var max = 8;
     var min = 1;
-    var randomIndex = Math.floor(Math.random() * (max - min) + 1) + min;
+    var randomIndex = Math.floor(Math.random() * (max - min)) + min;
 
     switch(randomIndex) {
         case 1:
@@ -190,6 +203,12 @@ function createParametricCylinder(parent, x, y, z) {
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+
+    mesh.userData = { step: 0 };
+    var index = surfaces.length;
+    surfaces[index] = mesh;
+    rotationAxis[index] = 0;
+    rotationSpeed[index] = 0.01;
 
     parent.add(mesh);
 }
@@ -474,6 +493,19 @@ function handleCollisions(){
 ////////////
 function update(){
     'use strict';
+    delta = clock.getDelta();
+
+    if (keysPressed['1']) {
+
+    }
+
+    if (keysPressed['2']) {
+
+    }
+
+    if (keysPressed['3']) {
+
+    }
 
 }
 
@@ -496,6 +528,8 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    clock = new THREE.Clock();
+
     createScene();
     createCamera();
 
@@ -511,9 +545,34 @@ function init() {
 function animate() {
     'use strict';
 
+    update();
+    //rotateParametricSurfaces();
+    rotateCarousel();
     render();
-
     requestAnimationFrame(animate);
+}
+
+function rotateCarousel() {
+    var carouselRotationSpeed = 0.01;
+
+    carousel.userData.step += carouselRotationSpeed * delta;
+    carousel.rotation.y = Math.sin(Math.PI * carousel.userData.step);
+}
+
+function rotateParametricSurfaces() {
+    for (var i = 0; i < surfaces.length; i++) {
+        surfaces[i].userData.step += rotationSpeed[i] * delta;
+
+        var axisCode = rotationAxis[i];
+        switch (axisCode) {
+            case 0:
+                surfaces[i].rotation.x += surfaces[i].userData.step;
+            case 1:
+                surfaces[i].rotation.y += Math.sin(surfaces[i].userData.step);
+            case 2:
+                surfaces[i].rotation.z += Math.sin(surfaces[i].userData.step);
+        }
+    }
 }
 
 ////////////////////////////
@@ -531,6 +590,7 @@ const angleStep = Math.PI / 180; // Adjust as needed
 const angle1Range = { min: -Math.PI / 4, max: Math.PI / 4 }; // Example range
 function onKeyDown(e) {
     'use strict';
+    keysPressed[e.keyCode] = true;
 
     switch (e.keyCode) {
     case 81: //Q
@@ -550,6 +610,7 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
+    keysPressed[e.keyCode] = false;
 }
 
 init();
