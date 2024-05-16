@@ -27,6 +27,8 @@ const outerRingOuterRadius = outerRingInnerRadius + ringRadius;
 const surfacesMaxLength = ringRadius * 1 / 4;
 const surfacesMaxHeight = heightDiff * 2 / 4;
 
+const layersStep = 0.08;
+
 // [ ID, axisCode, rotationSpeed ]
 const layer1Surfaces = [
     [1, 0, 0.1],
@@ -134,8 +136,11 @@ function createCarousel() {
     carousel.userData = { step: 0 };
 
     layer1 = new THREE.Object3D();
+    layer1.userData = { step: 0 };
     layer2 = new THREE.Object3D();
+    layer2.userData = { step: 0 };
     layer3 = new THREE.Object3D();
+    layer3.userData = { step: 0 };
     
     createCentralCylinder(carousel, 0, 0, 0);
     createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xfff73f, layer1Surfaces);
@@ -580,16 +585,19 @@ function update(){
     'use strict';
     delta = clock.getDelta();
 
-    if (keysPressed['1']) {
-
+    if (keysPressed[49]) {
+        layer1.userData.step += layersStep * delta;
+        layer1.position.y = Math.sin(layer1.userData.step * Math.PI * 2) * (cylinderHeight - innerRingHeight);
     }
 
-    if (keysPressed['2']) {
-
+    if (keysPressed[50]) {
+        layer2.userData.step += layersStep * delta;
+        layer2.position.y = Math.sin(layer2.userData.step * Math.PI * 2) * (cylinderHeight - middleRingHeight);
     }
 
-    if (keysPressed['3']) {
-
+    if (keysPressed[51]) {
+        layer3.userData.step += layersStep * delta;
+        layer3.position.y = Math.sin(layer3.userData.step * Math.PI * 2) * (cylinderHeight - outerRingHeight);
     }
 
 }
