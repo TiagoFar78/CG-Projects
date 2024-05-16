@@ -32,6 +32,9 @@ const surfacesMaxHeight = heightDiff * 2 / 4;
 //////////////////////
 var camera, scene, renderer;
 
+var directionalLight, spotlights = [];
+var directionalLightOn = true;
+
 var carousel, layer1, layer2, layer3;
 
 var surfaces = [], rotationAxis = [], rotationSpeed = [];
@@ -51,6 +54,8 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createCarousel();
+    createLights();
+
 }
 
 //////////////////////
@@ -77,6 +82,17 @@ function createCamera() {
 /* CREATE LIGHT(S) */
 /////////////////////
 
+function createLights() {
+    directionalLight = new THREE.DirectionalLight(0xffffff, 1); 
+    directionalLight.position.set(50, cylinderHeight + 50, 0); 
+    directionalLight.target.position.set(0,0,0);
+
+    var ambientLight = new THREE.AmbientLight(0xfd6f00, 0.2);
+
+    scene.add(directionalLight);
+    scene.add(ambientLight);
+}
+
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
@@ -90,9 +106,9 @@ function createCarousel() {
     layer3 = new THREE.Object3D();
     
     createCentralCylinder(carousel, 0, 0, 0);
-    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xff8000);
-    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xcc0000);
-    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0x000000);
+    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xfff73f);
+    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xff5b05);
+    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0xed0a3f);
 
     carousel.add(layer1);
     carousel.add(layer2);
@@ -102,7 +118,7 @@ function createCarousel() {
 }
 
 function createCentralCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide });
+    var material = new THREE.MeshLambertMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide });
 
     var path = new VerticalLine();
     var tubeGeometry = new THREE.TubeGeometry(path, 1, cylinderRadius, radialSegments);
@@ -130,7 +146,7 @@ function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeigh
 }
 
 function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
-    var material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe });
+    var material = new THREE.MeshLambertMaterial({ color: color, wireframe: wireframe });
 
     var outerCircle = new THREE.Shape();
     outerCircle.absarc(x, z, outerRadius);
@@ -182,7 +198,7 @@ function createRandomParametricSurface(parent, x, y, z) {
 }
 
 function createParametricCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial ( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -210,11 +226,19 @@ function createParametricCylinder(parent, x, y, z) {
     rotationAxis[index] = 0;
     rotationSpeed[index] = 0.01;
 
+    var spotLight = new THREE.SpotLight(0xfffffff, 1);
+    spotLight.position.set(x, y, z);
+    spotLight.target.position.set(x, y +  2, z);
+
+    spotlights.push(spotLight);
+    parent.add(spotLight);
+
+
     parent.add(mesh);
 }
 
 function createParametricDeformedCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -242,7 +266,7 @@ function createParametricDeformedCylinder(parent, x, y, z) {
 }
 
 function createParametricDeformedTiltedCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -277,7 +301,7 @@ function createParametricDeformedTiltedCylinder(parent, x, y, z) {
 }
 
 function createParametricCone(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -303,7 +327,7 @@ function createParametricCone(parent, x, y, z) {
 }
 
 function createParametricIncompleteCone(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -329,7 +353,7 @@ function createParametricIncompleteCone(parent, x, y, z) {
 }
 
 function createParametricDeformedTiltedCone(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -363,7 +387,7 @@ function createParametricDeformedTiltedCone(parent, x, y, z) {
 }
 
 function createParametricTiltedBaseCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -398,7 +422,7 @@ function createParametricTiltedBaseCylinder(parent, x, y, z) {
 }
 
 function createParametricFishFormatSurface(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var length = surfacesMaxLength;
@@ -439,7 +463,7 @@ function createParametricFishFormatSurface(parent, x, y, z) {
 }
 
 function createParametricThinCylinder(parent, x, y, z) {
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
 
     function parametricFunction(u, v, target) {
         var baseRadius = surfacesMaxLength / 2;
@@ -600,6 +624,12 @@ function onKeyDown(e) {
             scene.applyMatrix4(rotationMatrix);
         }
         break;
+    case 68: //D
+    case 110: //d
+        directionalLightOn = !directionalLightOn;
+        directionalLight.visible = directionalLightOn;
+        break;
+    
     default:
   }
 
