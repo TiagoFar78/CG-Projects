@@ -27,6 +27,38 @@ const outerRingOuterRadius = outerRingInnerRadius + ringRadius;
 const surfacesMaxLength = ringRadius * 1 / 4;
 const surfacesMaxHeight = heightDiff * 2 / 4;
 
+// [ ID, axisCode, rotationSpeed ]
+const layer1Surfaces = [
+    [1, 1, 0.1],
+    [2, 0, 0.3],
+    [3, 1, 0.2],
+    [4, 2, 0.3],
+    [5, 0, 0.2],
+    [6, 1, 0.4],
+    [7, 1, 0.5],
+    [8, 2, 0.5]
+];
+const layer2Surfaces = [
+    [6, 1, 0.1],
+    [8, 1, 0.1],
+    [2, 1, 0.3],
+    [1, 0, 0.5],
+    [4, 0, 0.4],
+    [3, 1, 0.2],
+    [7, 0, 0.2],
+    [5, 1, 0.5]
+];
+const layer3Surfaces = [
+    [8, 2, 0.1],
+    [3, 1, 0.5],
+    [7, 2, 0.2],
+    [4, 0, 0.4],
+    [2, 0, 0.3],
+    [5, 0, 0.2],
+    [6, 1, 0.1],
+    [1, 1, 0.2]
+];
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -37,7 +69,7 @@ var directionalLightOn = true;
 
 var carousel, layer1, layer2, layer3;
 
-var surfaces = [], rotationAxis = [], rotationSpeed = [];
+var surfaces = [];
 
 var keysPressed = {};
 
@@ -106,9 +138,9 @@ function createCarousel() {
     layer3 = new THREE.Object3D();
     
     createCentralCylinder(carousel, 0, 0, 0);
-    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xfff73f);
-    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xff5b05);
-    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0xed0a3f);
+    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xfff73f, layer1Surfaces);
+    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xff5b05, layer2Surfaces);
+    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0xed0a3f, layer3Surfaces);
 
     carousel.add(layer1);
     carousel.add(layer2);
@@ -136,12 +168,16 @@ class VerticalLine extends THREE.Curve {
 
 }
 
-function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeight, ringColor) {
+function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeight, ringColor, surfaces) {
     createRing(parent, 0, 0, 0, ringOuterRadius, ringInnerRadius, ringHeight, ringColor);
 
     var distanceFromOrigin = (ringOuterRadius + ringInnerRadius) / 2;
     for (var i = 0; i < 2 * Math.PI; i += Math.PI / 4) {
-        createRandomParametricSurface(parent, distanceFromOrigin * Math.sin(i), ringHeight, distanceFromOrigin * Math.cos(i));
+        var index = i / (Math.PI / 4);
+        var x = distanceFromOrigin * Math.sin(i);
+        var y = ringHeight;
+        var z = distanceFromOrigin * Math.cos(i);
+        createParametricSurface(parent, x, y, z, surfaces[index][0]);
     }
 }
 
@@ -164,12 +200,8 @@ function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
     parent.add(mesh);
 }
 
-function createRandomParametricSurface(parent, x, y, z) {
-    var max = 8;
-    var min = 1;
-    var randomIndex = Math.floor(Math.random() * (max - min)) + min;
-
-    switch(randomIndex) {
+function createParametricSurface(parent, x, y, z, surfaceId) {
+    switch(surfaceId) {
         case 1:
             createParametricCylinder(parent, x, y, z);
             return;
@@ -198,7 +230,7 @@ function createRandomParametricSurface(parent, x, y, z) {
 }
 
 function createParametricCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial ( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide });
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -220,11 +252,9 @@ function createParametricCylinder(parent, x, y, z) {
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
-    mesh.userData = { step: 0 };
     var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
     surfaces[index] = mesh;
-    rotationAxis[index] = 0;
-    rotationSpeed[index] = 0.1;
 
     var spotLight = new THREE.SpotLight(0xfffffff, 1);
     spotLight.position.set(x, y, z);
@@ -232,7 +262,6 @@ function createParametricCylinder(parent, x, y, z) {
 
     spotlights.push(spotLight);
     parent.add(spotLight);
-
 
     parent.add(mesh);
 }
@@ -261,6 +290,10 @@ function createParametricDeformedCylinder(parent, x, y, z) {
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
 
     parent.add(mesh);
 }
@@ -297,6 +330,10 @@ function createParametricDeformedTiltedCylinder(parent, x, y, z) {
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
+
     parent.add(mesh);
 }
 
@@ -323,6 +360,10 @@ function createParametricCone(parent, x, y, z) {
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
+
     parent.add(mesh);
 }
 
@@ -348,6 +389,10 @@ function createParametricIncompleteCone(parent, x, y, z) {
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
 
     parent.add(mesh);
 }
@@ -383,6 +428,10 @@ function createParametricDeformedTiltedCone(parent, x, y, z) {
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
+
     parent.add(mesh);
 }
 
@@ -417,6 +466,10 @@ function createParametricTiltedBaseCylinder(parent, x, y, z) {
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
 
     parent.add(mesh);
 }
@@ -459,6 +512,10 @@ function createParametricFishFormatSurface(parent, x, y, z) {
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
 
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
+
     parent.add(mesh);
 }
 
@@ -486,6 +543,10 @@ function createParametricThinCylinder(parent, x, y, z) {
 
     var mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
+
+    var index = surfaces.length;
+    mesh.userData = { step: 0, index: index };
+    surfaces[index] = mesh;
 
     parent.add(mesh);
 }
@@ -583,9 +644,28 @@ function rotateCarousel() {
 
 function rotateParametricSurfaces() {
     for (var i = 0; i < surfaces.length; i++) {
-        surfaces[i].userData.step += rotationSpeed[i] * delta;
+        var surfacesIndex = surfaces[i].userData.index;
+        var layer = surfacesIndex / 3 + 1;
+        var layerIndex = surfacesIndex % 8;
 
-        var axisCode = rotationAxis[i];
+        var layerSurfaces;
+        switch (layer) {
+            case 1:
+                layerSurfaces = layer1Surfaces;
+                break;
+            case 2:
+                layerSurfaces = layer2Surfaces;
+                break;
+            case 3:
+                layerSurfaces = layer3Surfaces;
+                break;            
+        }
+
+        var axisCode = layerSurfaces[layerIndex][1];
+        var rotationSpeed = layerSurfaces[layerIndex][2];
+
+        surfaces[i].userData.step += rotationSpeed * delta;
+
         switch (axisCode) {
             case 0:
                 surfaces[i].rotation.x = Math.PI * surfaces[i].userData.step;
