@@ -61,6 +61,10 @@ const layer3Surfaces = [
     [1, 1, 0.2]
 ];
 
+const mobiusRadius = middleRingOuterRadius;
+const mobiusWidth = 25;
+const mobiusSegments = 50;
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
@@ -72,6 +76,9 @@ var directionalLightOn = true;
 var carousel, layer1, layer2, layer3;
 
 var surfaces = [];
+
+const mobiusVertices = [];
+const mobiusIndices = [];
 
 var keysPressed = {};
 
@@ -88,6 +95,8 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createCarousel();
+    //createMobiusStrip();
+    //createSkydome();
     createLights();
 
 }
@@ -106,9 +115,9 @@ function createCamera() {
     var far = 1000;
     var fov = 70;
     camera = new THREE.PerspectiveCamera(fov, width / height, near, far);
-    camera.position.x = 100;
-    camera.position.y = 150;
-    camera.position.z = 100;
+    camera.position.x = 150;
+    camera.position.y = 200;
+    camera.position.z = 150;
     camera.lookAt(scene.position);
 }
 
@@ -561,6 +570,88 @@ function noise2D(x, y) {
     n = (n << 13) ^ n;
     return (1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
 }
+
+
+function createMobiusStrip() {
+     // Generate mobiusVertices
+     for (let i = 0; i <= mobiusSegments; i++) {
+        const t = (i / mobiusSegments) * Math.PI * 2;
+        const cos = Math.cos(t);
+        const sin = Math.sin(t);
+
+        for (let j = 0; j <= 1; j++) {
+            const sign = j === 0 ? -1 : 1;
+            const x = (mobiusRadius + (sign * mobiusWidth / 2) * cos) * cos;
+            const y = (mobiusRadius + (sign * mobiusWidth / 2) * cos) * sin;
+            const z = (sign * mobiusWidth / 2) * sin;
+            mobiusVertices.push(new THREE.Vector3(x, y, z));
+        }
+    }
+
+    // Generate faces (triangles)
+    for (let i = 0; i < mobiusSegments; i++) {
+        const a = 2 * i;
+        const b = 2 * i + 1;
+        const c = 2 * (i + 1);
+        const d = 2 * (i + 1) + 1;
+
+        mobiusIndices.push(a, b, d);
+        mobiusIndices.push(a, d, c);
+    }
+
+    // Create geometry and mesh
+    const geometry = new THREE.BufferGeometry();
+    const mobiusVerticesArray = new Float32Array(mobiusVertices.length * 3);
+    mobiusVertices.forEach((v, i) => {
+        mobiusVerticesArray[i * 3] = v.x;
+        mobiusVerticesArray[i * 3 + 1] = v.y;
+        mobiusVerticesArray[i * 3 + 2] = v.z;
+    });
+    geometry.setAttribute('position', new THREE.BufferAttribute(mobiusVerticesArray, 3));
+    geometry.setIndex(mobiusIndices);
+    geometry.computeVertexNormals();
+
+    // Rotate the geometry to place it horizontally
+    geometry.rotateX(-Math.PI / 2);
+
+    const material = new THREE.MeshLambertMaterial({ color: 0x87CEFA, wireframe: wireframe, side: THREE.DoubleSide });
+    const mobiusStrip = new THREE.Mesh(geometry, material);
+
+    // Explicitly set the Mobius strip position
+    mobiusStrip.position.set(0, 100, 0); // You can change these values to move the strip
+
+    scene.add(mobiusStrip);
+
+}
+
+function createSkydome() {
+    const skydomeRadius = outerRingOuterRadius + 40; // Adding a buffer to ensure the skydome fully wraps around the carousel
+
+    // Define the angle for the spherical cap (e.g., 90 degrees for a half-sphere cap)
+    const phiStart = 0; // Horizontal starting angle
+    const phiLength = Math.PI * 2; // Horizontal sweep angle (360 degrees)
+    const thetaStart = 0; // Vertical starting angle from the bottom
+    const thetaLength = Math.PI / 2; // Vertical sweep angle (90 degrees for a quarter-sphere cap)
+
+    // Skydome Geometry
+    const geometry = new THREE.SphereGeometry(skydomeRadius, 60, 40, phiStart, phiLength, thetaStart, thetaLength);
+    geometry.scale(-1, 1, 1); // Invert the geometry on the x-axis so that all of the faces point inward
+
+    // Load Texture
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load('./img/teste3.png', function(texture) {
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            transparent: true, // Enable transparency
+            opacity: 0.2 // Set desired opacity (0.5 for 50% transparency)
+        });
+        const skydome = new THREE.Mesh(geometry, material);
+        scene.add(skydome);
+    });
+}
+
+
 
 //////////////////////
 /* CHECK COLLISIONS */
