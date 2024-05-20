@@ -63,7 +63,7 @@ const layer3Surfaces = [
 
 const mobiusRadius = middleRingOuterRadius;
 const mobiusWidth = 25;
-const mobiusSegments = 50;
+const mobiusSegments = 25;
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -95,8 +95,8 @@ function createScene(){
     scene.add(new THREE.AxesHelper(10));
 
     createCarousel();
-    //createMobiusStrip();
-    //createSkydome();
+    createMobiusStrip();
+    createSkydome();
     createLights();
 
 }
@@ -614,18 +614,17 @@ function createMobiusStrip() {
     // Rotate the geometry to place it horizontally
     geometry.rotateX(-Math.PI / 2);
 
-    const material = new THREE.MeshLambertMaterial({ color: 0x87CEFA, wireframe: wireframe, side: THREE.DoubleSide });
+    const material = new THREE.MeshLambertMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide });
     const mobiusStrip = new THREE.Mesh(geometry, material);
 
-    // Explicitly set the Mobius strip position
-    mobiusStrip.position.set(0, 100, 0); // You can change these values to move the strip
+    mobiusStrip.position.set(0, 100, 0);
 
     scene.add(mobiusStrip);
 
 }
 
 function createSkydome() {
-    const skydomeRadius = outerRingOuterRadius + 40; // Adding a buffer to ensure the skydome fully wraps around the carousel
+    const skydomeRadius = outerRingOuterRadius + 50; // Adding a buffer to ensure the skydome fully wraps around the carousel
 
     // Define the angle for the spherical cap (e.g., 90 degrees for a half-sphere cap)
     const phiStart = 0; // Horizontal starting angle
@@ -639,12 +638,12 @@ function createSkydome() {
 
     // Load Texture
     const textureLoader = new THREE.TextureLoader();
-    textureLoader.load('./img/teste3.png', function(texture) {
+    textureLoader.load('./img/teste.png', function(texture) {
         const material = new THREE.MeshBasicMaterial({
             map: texture,
             side: THREE.BackSide,
             transparent: true, // Enable transparency
-            opacity: 0.2 // Set desired opacity (0.5 for 50% transparency)
+            opacity: 0.15 // Set desired opacity (0.5 for 50% transparency)
         });
         const skydome = new THREE.Mesh(geometry, material);
         scene.add(skydome);
