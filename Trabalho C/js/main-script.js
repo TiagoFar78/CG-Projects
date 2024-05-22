@@ -816,6 +816,8 @@ function init() {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+    document.body.appendChild(VRButton.createButton(renderer));
+    renderer.xr.enabled = true;
 
     clock = new THREE.Clock();
 
@@ -840,7 +842,8 @@ function animate() {
     rotateParametricSurfaces();
     rotateCarousel();
     render();
-    requestAnimationFrame(animate);
+    //requestAnimationFrame(animate);
+    renderer.setAnimationLoop(animate);
 }
 
 function rotateCarousel() {
