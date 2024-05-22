@@ -641,20 +641,60 @@ function noise2D(x, y) {
 
 
 function createMobiusStrip() {
-     // Generate mobiusVertices
-     for (let i = 0; i <= mobiusSegments; i++) {
-        const t = (i / mobiusSegments) * Math.PI * 2;
-        const cos = Math.cos(t);
-        const sin = Math.sin(t);
-
-        for (let j = 0; j <= 1; j++) {
-            const sign = j === 0 ? -1 : 1;
-            const x = (mobiusRadius + (sign * mobiusWidth / 2) * cos) * cos;
-            const y = (mobiusRadius + (sign * mobiusWidth / 2) * cos) * sin;
-            const z = (sign * mobiusWidth / 2) * sin;
-            mobiusVertices.push(new THREE.Vector3(x, y, z));
-        }
-    }
+    mobiusVertices = [
+        new THREE.Vector3(57.5, 0, -0),
+        new THREE.Vector3(82.5, 0, 0),
+        new THREE.Vector3(56.073904528730026, 14.397331638404115, -3.108623589560685),
+        new THREE.Vector3(79.52773802927832, 20.419252564675556, 3.108623589560685),
+        new THREE.Vector3(51.74255013445172, 28.445707652732477, -6.0219209262714415),
+        new THREE.Vector3(70.94038507168918, 38.99980672150767, 6.0219209262714415),
+        new THREE.Vector3(44.3853631724406, 41.680630362331506, -8.556838824108608),
+        new THREE.Vector3(57.67024466655702, 54.155964467684896, 8.556838824108608),
+        new THREE.Vector3(33.918996220811465, 53.447785707228434, -10.554099068775189),
+        new THREE.Vector3(41.09675507624805, 64.75812386305368, 10.554099068775189),
+        new THREE.Vector3(20.437545821089746, 62.90029831383279, -11.888206453689419),
+        new THREE.Vector3(22.824833391402898, 70.2476139674887, 11.888206453689419),
+        new THREE.Vector3(4.346053250267433, 69.07853828020211, -12.475334105353394),
+        new THREE.Vector3(4.444619483836461, 70.64520369975591, 12.475334105353394),
+        new THREE.Vector3(-13.555588984199169, 71.06088600528744, -12.278590634108607),
+        new THREE.Vector3(-12.677795057802307, 66.45932909672896, 12.278590634108607),
+        new THREE.Vector3(-32.070650473625776, 68.15360143997005, -11.310338155825244),
+        new THREE.Vector3(-27.5384503454844, 58.52218590527268, 11.310338155825244),
+        new THREE.Vector3(-49.6985460662475, 60.075222311359546, -9.631415534697366),
+        new THREE.Vector3(-39.54081249856906, 47.79663167725094, 9.631415534697366),
+        new THREE.Vector3(-64.81254582108973, 47.08907088731784, -7.347315653655915),
+        new THREE.Vector3(-48.4498333914029, 35.20086443362842, 7.347315653655915),
+        new THREE.Vector3(-75.8904079335614, 30.047138099981776, -4.601556908558477),
+        new THREE.Vector3(-54.27830009079378, 21.490299275873166, 4.601556908558477),
+        new THREE.Vector3(-81.75167384906739, 10.327638144281662, -1.5666654195538068),
+        new THREE.Vector3(-57.144384334959504, 7.219014554720972, 1.5666654195538068),
+        new THREE.Vector3(-81.75167384906739, -10.327638144281643, 1.5666654195538037),
+        new THREE.Vector3(-57.14438433495951, -7.219014554720958, -1.5666654195538037),
+        new THREE.Vector3(-75.8904079335614, -30.047138099981787, 4.601556908558479),
+        new THREE.Vector3(-54.27830009079377, -21.490299275873173, -4.601556908558479),
+        new THREE.Vector3(-64.81254582108974, -47.08907088731782, 7.3473156536559125),
+        new THREE.Vector3(-48.449833391402905, -35.200864433628404, -7.3473156536559125),
+        new THREE.Vector3(-49.69854606624748, -60.07522231135956, 9.631415534697368),
+        new THREE.Vector3(-39.54081249856905, -47.79663167725096, -9.631415534697368),
+        new THREE.Vector3(-32.07065047362574, -68.15360143997007, 11.310338155825248),
+        new THREE.Vector3(-27.538450345484364, -58.5221859052727, -11.310338155825248),
+        new THREE.Vector3(-13.55558898419915, -71.06088600528744, 12.278590634108609),
+        new THREE.Vector3(-12.677795057802296, -66.45932909672898, -12.278590634108609),
+        new THREE.Vector3(4.346053250267386, -69.07853828020212, 12.475334105353394),
+        new THREE.Vector3(4.44461948383641, -70.6452036997559, -12.475334105353394),
+        new THREE.Vector3(20.43754582108973, -62.900298313832806, 11.88820645368942),
+        new THREE.Vector3(22.824833391402883, -70.2476139674887, -11.88820645368942),
+        new THREE.Vector3(33.91899622081143, -53.44778570722847, 10.554099068775194),
+        new THREE.Vector3(41.096755076248, -64.7581238630537, -10.554099068775194),
+        new THREE.Vector3(44.38536317244058, -41.68063036233153, 8.556838824108612),
+        new THREE.Vector3(57.67024466655699, -54.155964467684925, -8.556838824108612),
+        new THREE.Vector3(51.74255013445172, -28.445707652732477, 6.0219209262714415),
+        new THREE.Vector3(70.94038507168918, -38.99980672150767, -6.0219209262714415),
+        new THREE.Vector3(56.07390452873002, -14.397331638404147, 3.108623589560692),
+        new THREE.Vector3(79.52773802927831, -20.419252564675602, -3.108623589560692),
+        new THREE.Vector3(57.5, -1.4083438190194563e-14, 3.061616997868383e-15),
+        new THREE.Vector3(82.5, -2.0206672185931328e-14, -3.061616997868383e-15)
+    ];
 
     // Generate faces (triangles)
     for (let i = 0; i < mobiusSegments; i++) {
@@ -688,23 +728,20 @@ function createMobiusStrip() {
     mobiusStrip.position.set(0, 100, 0);
 
     scene.add(mobiusStrip);
-
-    
-
 }
 
 function createSkydome() {
-    const skydomeRadius = outerRingOuterRadius + 50; // Adding a buffer to ensure the skydome fully wraps around the carousel
+    const skydomeRadius = outerRingOuterRadius + 50;
 
-    // Define the angle for the spherical cap (e.g., 90 degrees for a half-sphere cap)
-    const phiStart = 0; // Horizontal starting angle
-    const phiLength = Math.PI * 2; // Horizontal sweep angle (360 degrees)
-    const thetaStart = 0; // Vertical starting angle from the bottom
-    const thetaLength = Math.PI / 2; // Vertical sweep angle (90 degrees for a quarter-sphere cap)
+    // Define the angle for the spherical cap
+    const phiStart = 0;
+    const phiLength = Math.PI * 2;
+    const thetaStart = 0;
+    const thetaLength = Math.PI / 2;
 
     // Skydome Geometry
     const geometry = new THREE.SphereGeometry(skydomeRadius, 60, 40, phiStart, phiLength, thetaStart, thetaLength);
-    geometry.scale(-1, 1, 1); // Invert the geometry on the x-axis so that all of the faces point inward
+    geometry.scale(-1, 1, 1);
 
     // Load Texture
     const textureLoader = new THREE.TextureLoader();
@@ -712,8 +749,8 @@ function createSkydome() {
         const material = new THREE.MeshBasicMaterial({
             map: texture,
             side: THREE.BackSide,
-            transparent: true, // Enable transparency
-            opacity: 0.15 // Set desired opacity (0.5 for 50% transparency)
+            transparent: true,
+            opacity: 0.15
         });
         const skydome = new THREE.Mesh(geometry, material);
         scene.add(skydome);
