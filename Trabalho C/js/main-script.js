@@ -134,7 +134,6 @@ var surfaces = [];
 
 var rings = [];
 
-const mobiusVertices = [];
 const mobiusIndices = [];
 
 var keysPressed = {};
@@ -641,7 +640,7 @@ function noise2D(x, y) {
 
 
 function createMobiusStrip() {
-    mobiusVertices = [
+    const mobiusVertices = [
         new THREE.Vector3(57.5, 0, -0),
         new THREE.Vector3(82.5, 0, 0),
         new THREE.Vector3(56.073904528730026, 14.397331638404115, -3.108623589560685),
