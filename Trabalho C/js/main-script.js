@@ -65,17 +65,74 @@ const mobiusRadius = middleRingOuterRadius;
 const mobiusWidth = 25;
 const mobiusSegments = 25;
 
+const materialTypeSurfaces = {
+  lambert: new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide }),
+  phong: new THREE.MeshPhongMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide }),
+  toon: new THREE.MeshToonMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide }),
+  normal: new THREE.MeshNormalMaterial({ wireframe: wireframe, side: THREE.DoubleSide }),
+  basic: new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide })
+};
+
+const materialTypeRing1 = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0xfff73f, wireframe: wireframe }),
+    phong: new THREE.MeshPhongMaterial({ color: 0xfff73f, wireframe: wireframe }),
+    toon: new THREE.MeshToonMaterial({ color: 0xfff73f, wireframe: wireframe }),
+    normal: new THREE.MeshNormalMaterial({ wireframe: wireframe }),
+    basic: new THREE.MeshBasicMaterial({ color: 0xfff73f, wireframe: wireframe })
+};
+
+const materialTypeRing2 = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0xff5b05, wireframe: wireframe }),
+    phong: new THREE.MeshPhongMaterial({ color: 0xff5b05, wireframe: wireframe }),
+    toon: new THREE.MeshToonMaterial({ color: 0xff5b05, wireframe: wireframe }),
+    normal: new THREE.MeshNormalMaterial({ wireframe: wireframe }),
+    basic: new THREE.MeshBasicMaterial({ color: 0xff5b05, wireframe: wireframe })
+};
+
+const materialTypeRing3 = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0xed0a3f, wireframe: wireframe }),
+    phong: new THREE.MeshPhongMaterial({ color: 0xed0a3f, wireframe: wireframe }),
+    toon: new THREE.MeshToonMaterial({ color: 0xed0a3f, wireframe: wireframe }),
+    normal: new THREE.MeshNormalMaterial({ wireframe: wireframe }),
+    basic: new THREE.MeshBasicMaterial({ color: 0xed0a3f, wireframe: wireframe })
+};
+
+const materialTypeMobius = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide }),
+    phong: new THREE.MeshPhongMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide }),
+    toon: new THREE.MeshToonMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide }),
+    normal: new THREE.MeshNormalMaterial({ 0x0FD2CC: wireframe, side: THREE.DoubleSide }),
+    basic: new THREE.MeshBasicMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide })
+};
+
+const materialTypeCylinder = {
+    lambert: new THREE.MeshLambertMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide }),
+    phong: new THREE.MeshPhongMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide }),
+    toon: new THREE.MeshToonMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide }),
+    normal: new THREE.MeshNormalMaterial({ 0x004d99: wireframe, side: THREE.DoubleSide }),
+    basic: new THREE.MeshBasicMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide })
+};
+
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
 var camera, scene, renderer;
 
-var directionalLight, spotlights = [];
+var directionalLight;
 var directionalLightOn = true;
+
+var spotlights = [];
+var spotlightsOn = true;
+
+var currentMaterialType = 'lambert';
 
 var carousel, layer1, layer2, layer3;
 
+var centralCylinder, skydome, mobiusStrip;
+
 var surfaces = [];
+
+var rings = [];
 
 const mobiusVertices = [];
 const mobiusIndices = [];
@@ -152,9 +209,9 @@ function createCarousel() {
     layer3.userData = { step: 0 };
     
     createCentralCylinder(carousel, 0, 0, 0);
-    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, 0xfff73f, layer1Surfaces);
-    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, 0xff5b05, layer2Surfaces);
-    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, 0xed0a3f, layer3Surfaces);
+    createCarouselLayer(layer1, innerRingOuterRadius, innerRingInnerRadius, innerRingHeight, materialTypeRing1[currentMaterialType].clone(), layer1Surfaces);
+    createCarouselLayer(layer2, middleRingOuterRadius, middleRingInnerRadius, middleRingHeight, materialTypeRing2[currentMaterialType].clone(), layer2Surfaces);
+    createCarouselLayer(layer3, outerRingOuterRadius, outerRingInnerRadius, outerRingHeight, materialTypeRing3[currentMaterialType].clone(), layer3Surfaces);
 
     carousel.add(layer1);
     carousel.add(layer2);
@@ -164,14 +221,14 @@ function createCarousel() {
 }
 
 function createCentralCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial({ color: 0x004d99, wireframe: wireframe, side: THREE.DoubleSide });
+    var material = materialTypeCylinder[currentMaterialType].clone();
 
     var path = new VerticalLine();
     var tubeGeometry = new THREE.TubeGeometry(path, 1, cylinderRadius, radialSegments);
-    var mesh = new THREE.Mesh(tubeGeometry, material);
-    mesh.position.set(x, y, z);
+    centralCylinder = new THREE.Mesh(tubeGeometry, material);
+    centralCylinder.position.set(x, y, z);
 
-    parent.add(mesh);
+    parent.add(centralCylinder);
 }
 
 class VerticalLine extends THREE.Curve {
@@ -182,8 +239,8 @@ class VerticalLine extends THREE.Curve {
 
 }
 
-function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeight, ringColor, surfaces) {
-    createRing(parent, 0, 0, 0, ringOuterRadius, ringInnerRadius, ringHeight, ringColor);
+function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeight, material, surfaces) {
+    createRing(parent, 0, 0, 0, ringOuterRadius, ringInnerRadius, ringHeight, material);
 
     var distanceFromOrigin = (ringOuterRadius + ringInnerRadius) / 2;
     for (var i = 0; i < 2 * Math.PI; i += Math.PI / 4) {
@@ -192,12 +249,11 @@ function createCarouselLayer(parent, ringOuterRadius, ringInnerRadius, ringHeigh
         var y = ringHeight;
         var z = distanceFromOrigin * Math.cos(i);
         createParametricSurface(parent, x, y, z, surfaces[index][0]);
+        addSpotlight(parent, x, y + surfacesMaxHeight / 2, z);
     }
 }
 
-function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
-    var material = new THREE.MeshLambertMaterial({ color: color, wireframe: wireframe });
-
+function createRing(parent, x, y, z, outerRadius, innerRadius, height, material) {
     var outerCircle = new THREE.Shape();
     outerCircle.absarc(x, z, outerRadius);
 
@@ -212,6 +268,7 @@ function createRing(parent, x, y, z, outerRadius, innerRadius, height, color) {
     mesh.position.set(x, y, z);
 
     parent.add(mesh);
+    rings.push(mesh);
 }
 
 function createParametricSurface(parent, x, y, z, surfaceId) {
@@ -243,8 +300,25 @@ function createParametricSurface(parent, x, y, z, surfaceId) {
     }
 }
 
+function addSpotlight(parent, x, y, z) {
+    const spotLight = new THREE.SpotLight(0xffffff, 10);
+    spotLight.position.set(x, y, z);
+    spotLight.target.position.set(x, y + surfacesMaxHeight , z);
+    spotLight.distance = 15;
+    spotLight.angle = Math.PI / 4;
+
+
+    parent.add(spotLight);
+    parent.add(spotLight.target);
+
+    //const spotlightHelper = new THREE.SpotLightHelper(spotLight);
+    //scene.add(spotlightHelper);
+
+    spotlights.push(spotLight);
+}
+
 function createParametricCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial({ color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide });
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -270,18 +344,11 @@ function createParametricCylinder(parent, x, y, z) {
     mesh.userData = { step: 0, index: index };
     surfaces[index] = mesh;
 
-    var spotLight = new THREE.SpotLight(0xfffffff, 1);
-    spotLight.position.set(x, y, z);
-    spotLight.target.position.set(x, y +  2, z);
-
-    spotlights.push(spotLight);
-    parent.add(spotLight);
-
     parent.add(mesh);
 }
 
 function createParametricDeformedCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -313,7 +380,7 @@ function createParametricDeformedCylinder(parent, x, y, z) {
 }
 
 function createParametricDeformedTiltedCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -352,7 +419,7 @@ function createParametricDeformedTiltedCylinder(parent, x, y, z) {
 }
 
 function createParametricCone(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -382,7 +449,7 @@ function createParametricCone(parent, x, y, z) {
 }
 
 function createParametricIncompleteCone(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -412,7 +479,7 @@ function createParametricIncompleteCone(parent, x, y, z) {
 }
 
 function createParametricDeformedTiltedCone(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var radius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -449,8 +516,9 @@ function createParametricDeformedTiltedCone(parent, x, y, z) {
     parent.add(mesh);
 }
 
+
 function createParametricTiltedBaseCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     function parametricFunction(u, v, target) {
         var radius = surfacesMaxLength / 2;
@@ -489,7 +557,7 @@ function createParametricTiltedBaseCylinder(parent, x, y, z) {
 }
 
 function createParametricFishFormatSurface(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var length = surfacesMaxLength;
     var width = surfacesMaxLength / 2;
@@ -534,7 +602,7 @@ function createParametricFishFormatSurface(parent, x, y, z) {
 }
 
 function createParametricThinCylinder(parent, x, y, z) {
-    var material = new THREE.MeshLambertMaterial( { color: 0x00ff00, wireframe: wireframe, side: THREE.DoubleSide } );
+    var material = materialTypeSurfaces[currentMaterialType].clone();
 
     var baseRadius = surfacesMaxLength / 2;
     var height = surfacesMaxHeight;
@@ -614,12 +682,14 @@ function createMobiusStrip() {
     // Rotate the geometry to place it horizontally
     geometry.rotateX(-Math.PI / 2);
 
-    const material = new THREE.MeshLambertMaterial({ color: 0x0FD2CC, wireframe: wireframe, side: THREE.DoubleSide });
-    const mobiusStrip = new THREE.Mesh(geometry, material);
+    const material = materialTypeMobius[currentMaterialType].clone();
+    mobiusStrip = new THREE.Mesh(geometry, material);
 
     mobiusStrip.position.set(0, 100, 0);
 
     scene.add(mobiusStrip);
+
+    
 
 }
 
@@ -716,6 +786,10 @@ function init() {
     createScene();
     createCamera();
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.update();
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 }
@@ -789,6 +863,19 @@ function onResize() {
 ///////////////////////
 /* KEY DOWN CALLBACK */
 ///////////////////////
+
+function updateMaterials() {
+    for (var i = 0; i < surfaces.length; i++) {
+        surfaces[i].material = materialTypeSurfaces[currentMaterialType].clone();
+    }
+
+    rings[0].material = materialTypeRing1[currentMaterialType].clone();
+    rings[1].material = materialTypeRing2[currentMaterialType].clone();
+    rings[2].material = materialTypeRing3[currentMaterialType].clone();
+    mobiusStrip.material = materialTypeMobius[currentMaterialType].clone();
+    centralCylinder.material = materialTypeCylinder[currentMaterialType].clone();
+}
+
 function onKeyDown(e) {
     'use strict';
     keysPressed[e.keyCode] = true;
@@ -799,7 +886,38 @@ function onKeyDown(e) {
         directionalLightOn = !directionalLightOn;
         directionalLight.visible = directionalLightOn;
         break;
-    
+    case 83: //S
+    case 115: //s
+        spotlightsOn = !spotlightsOn;
+        spotlights.forEach(function (spotlight) {
+            spotlight.visible = spotlightsOn;
+        });
+        break;
+    case 81: //Q
+    case 113: //q
+        currentMaterialType = 'lambert';
+        updateMaterials();
+        break;
+    case 87: //W
+    case 119: //w
+        currentMaterialType = 'phong';
+        updateMaterials();
+        break;
+    case 69: //E
+    case 101: //e
+        currentMaterialType = 'toon';
+        updateMaterials();
+        break;
+    case 82: // R
+    case 114: //r
+        currentMaterialType = 'normal';
+        updateMaterials();
+        break;
+    case 84: //T
+    case 116: //t
+        currentMaterialType = 'basic';
+        updateMaterials();
+        break;
     default:
   }
 
