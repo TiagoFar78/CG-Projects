@@ -124,11 +124,14 @@ var directionalLightOn = true;
 var spotlights = [];
 var spotlightsOn = true;
 
+var pointlights = [];
+var pointlightsOn = true;
+
 var currentMaterialType = 'lambert';
 
 var carousel, layer1, layer2, layer3;
 
-var centralCylinder, skydome, mobiusStrip;
+var centralCylinder, mobiusStrip;
 
 var surfaces = [];
 
@@ -301,8 +304,8 @@ function createParametricSurface(parent, x, y, z, surfaceId) {
 
 function addSpotlight(parent, x, y, z) {
     const spotLight = new THREE.SpotLight(0xffffff, 10);
-    spotLight.position.set(x, y, z);
-    spotLight.target.position.set(x, y + surfacesMaxHeight , z);
+    spotLight.position.set(x, y - surfacesMaxHeight / 2, z);
+    spotLight.target.position.set(x, y + surfacesMaxHeight * 2 , z);
     spotLight.distance = 15;
     spotLight.angle = Math.PI / 4;
 
@@ -724,25 +727,29 @@ function createMobiusStrip() {
     const material = materialTypeMobius[currentMaterialType].clone();
     mobiusStrip = new THREE.Mesh(geometry, material);
 
-    mobiusStrip.position.set(0, 100, 0);
+    mobiusStrip.position.set(0, 135, 0);
 
+    for (var i = 0; i < 8; i++) {
+        var pointLight = new THREE.PointLight(0xffffff, 5);
+        const angle = i * Math.PI / 4;
+        pointLight.position.set(mobiusRadius * Math.cos(angle), 0, mobiusRadius * Math.sin(angle));
+        mobiusStrip.add(pointLight);
+        pointlights.push(pointLight);
+    }
     scene.add(mobiusStrip);
 }
 
 function createSkydome() {
-    const skydomeRadius = outerRingOuterRadius + 50;
+    const skydomeRadius = outerRingOuterRadius + 70;
 
-    // Define the angle for the spherical cap
     const phiStart = 0;
     const phiLength = Math.PI * 2;
     const thetaStart = 0;
     const thetaLength = Math.PI / 2;
 
-    // Skydome Geometry
     const geometry = new THREE.SphereGeometry(skydomeRadius, 60, 40, phiStart, phiLength, thetaStart, thetaLength);
     geometry.scale(-1, 1, 1);
 
-    // Load Texture
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load('./img/teste.png', function(texture) {
         const material = new THREE.MeshBasicMaterial({
@@ -928,9 +935,12 @@ function onKeyDown(e) {
     case 83: //S
     case 115: //s
         spotlightsOn = !spotlightsOn;
-        spotlights.forEach(function (spotlight) {
-            spotlight.visible = spotlightsOn;
-        });
+        spotlights.forEach(spotlight => spotlight.visible = spotlightsOn);
+        break;
+    case 80: // P
+    case 112: // p
+        pointlightsOn = !pointlightsOn;
+        pointlights.forEach(light => light.visible = pointlightsOn);
         break;
     case 81: //Q
     case 113: //q
