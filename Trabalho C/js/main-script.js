@@ -10,6 +10,8 @@ const parametricSurfacesSegments = 12;
 
 const wireframe = false;
 
+const carouselOffset = -50;
+
 const cylinderHeight = 100;
 const cylinderRadius = 10;
 const ringRadius = 30;
@@ -151,11 +153,9 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xe6ffe6);
 
-    scene.add(new THREE.AxesHelper(10));
-
-    createCarousel();
-    createMobiusStrip();
-    createSkydome();
+    createCarousel(carouselOffset);
+    createMobiusStrip(carouselOffset);
+    createSkydome(carouselOffset);
     createLights();
 
 }
@@ -165,8 +165,6 @@ function createScene(){
 //////////////////////
 function createCamera() {
     'use strict';
-
-    // FIZ ESTA BOMBA SÒ PARA TESTAR, MUDEM DEPOIS
 
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -195,11 +193,28 @@ function createLights() {
     scene.add(ambientLight);
 }
 
+function addSpotlight(parent, x, y, z) {
+    const spotLight = new THREE.SpotLight(0xffffff, 10);
+    spotLight.position.set(x, y - surfacesMaxHeight / 2, z);
+    spotLight.target.position.set(x, y + surfacesMaxHeight * 2 , z);
+    spotLight.distance = 15;
+    spotLight.angle = Math.PI / 4;
+
+
+    parent.add(spotLight);
+    parent.add(spotLight.target);
+
+    //const spotlightHelper = new THREE.SpotLightHelper(spotLight);
+    //scene.add(spotlightHelper);
+
+    spotlights.push(spotLight);
+}
+
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
 
-function createCarousel() {
+function createCarousel(offset) {
     carousel = new THREE.Object3D();
     carousel.userData = { step: 0 };
 
@@ -218,6 +233,8 @@ function createCarousel() {
     carousel.add(layer1);
     carousel.add(layer2);
     carousel.add(layer3);
+    
+    carousel.position.set(offset, offset, offset);
 
     scene.add(carousel);
 }
@@ -300,23 +317,6 @@ function createParametricSurface(parent, x, y, z, surfaceId) {
             createParametricThinCylinder(parent, x, y, z);
             return;
     }
-}
-
-function addSpotlight(parent, x, y, z) {
-    const spotLight = new THREE.SpotLight(0xffffff, 10);
-    spotLight.position.set(x, y - surfacesMaxHeight / 2, z);
-    spotLight.target.position.set(x, y + surfacesMaxHeight * 2 , z);
-    spotLight.distance = 15;
-    spotLight.angle = Math.PI / 4;
-
-
-    parent.add(spotLight);
-    parent.add(spotLight.target);
-
-    //const spotlightHelper = new THREE.SpotLightHelper(spotLight);
-    //scene.add(spotlightHelper);
-
-    spotlights.push(spotLight);
 }
 
 function createParametricCylinder(parent, x, y, z) {
@@ -518,46 +518,6 @@ function createParametricDeformedTiltedCone(parent, x, y, z) {
     parent.add(mesh);
 }
 
-
-function createParametricTiltedBaseCylinder(parent, x, y, z) {
-    var material = materialTypeSurfaces[currentMaterialType].clone();
-
-    function parametricFunction(u, v, target) {
-        var radius = surfacesMaxLength / 2;
-        var height = surfacesMaxHeight;
-        
-        var theta = u * Math.PI * 2;
-        var y = v * height;
-        
-        var x = radius * Math.cos(theta);
-        var z = radius * Math.sin(theta);
-
-        if (y > height / 2) {
-            var tiltAmount = 0.8;
-            var tiltCenter = 0.7;
-            var tiltDisplacement = height * tiltAmount * (v - tiltCenter) * (v - tiltCenter);
-
-            var tilt = tiltDisplacement * (theta < Math.PI ? 1 : -1);
-            y += tilt;
-        }
-        
-        return target.set(x, y, z);
-    }
-    
-    var segmentsU = parametricSurfacesSegments;
-    var segmentsV = 1;
-    var geometry = new ParametricGeometry(parametricFunction, segmentsU, segmentsV);
-
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
-
-    var index = surfaces.length;
-    mesh.userData = { step: 0, index: index };
-    surfaces[index] = mesh;
-
-    parent.add(mesh);
-}
-
 function createParametricFishFormatSurface(parent, x, y, z) {
     var material = materialTypeSurfaces[currentMaterialType].clone();
 
@@ -642,7 +602,7 @@ function noise2D(x, y) {
 }
 
 
-function createMobiusStrip() {
+function createMobiusStrip(offset) {
     const mobiusVertices = [
         new THREE.Vector3(57.5, 0, -0),
         new THREE.Vector3(82.5, 0, 0),
@@ -727,7 +687,7 @@ function createMobiusStrip() {
     const material = materialTypeMobius[currentMaterialType].clone();
     mobiusStrip = new THREE.Mesh(geometry, material);
 
-    mobiusStrip.position.set(0, 135, 0);
+    mobiusStrip.position.set(offset, 135 + offset, offset);
 
     for (var i = 0; i < 8; i++) {
         var pointLight = new THREE.PointLight(0xffffff, 5);
@@ -739,7 +699,7 @@ function createMobiusStrip() {
     scene.add(mobiusStrip);
 }
 
-function createSkydome() {
+function createSkydome(offset) {
     const skydomeRadius = outerRingOuterRadius + 70;
 
     const phiStart = 0;
@@ -759,26 +719,9 @@ function createSkydome() {
             opacity: 0.15
         });
         const skydome = new THREE.Mesh(geometry, material);
+        skydome.position.set(offset, offset, offset);
         scene.add(skydome);
     });
-}
-
-
-
-//////////////////////
-/* CHECK COLLISIONS */
-//////////////////////
-function checkCollisions(){
-    'use strict';
-
-}
-
-///////////////////////
-/* HANDLE COLLISIONS */
-///////////////////////
-function handleCollisions(){
-    'use strict';
-
 }
 
 ////////////
@@ -837,6 +780,7 @@ function init() {
 
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener("resize", onResize);
 }
 
 /////////////////////
@@ -904,6 +848,12 @@ function rotateParametricSurfaces() {
 function onResize() { 
     'use strict';
 
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    if (window.innerHeight > 0 && window.innerWidth > 0) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
 }
 
 ///////////////////////
